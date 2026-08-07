@@ -17,7 +17,7 @@ Creates an AWS Lambda function with optional EventBridge trigger integration.
 
 ```
 module "hello_world" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "hello-world"
   lambda_path     = "../lambda/hello-world"
@@ -29,7 +29,7 @@ module "hello_world" {
 
 ```
 module "api_handler" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "api-handler"
   lambda_path     = "../lambda/api-handler"
@@ -49,7 +49,7 @@ module "api_handler" {
 
 ```
 module "amplify_pr_approver" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "approvePR-${var.jira_key}"
   lambda_path     = "../lambda/approvePR"
@@ -68,7 +68,7 @@ module "amplify_pr_approver" {
 
 ```
 module "data_processor" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "data-processor"
   lambda_path     = "../lambda/data-processor"
@@ -88,7 +88,7 @@ module "data_processor" {
 
 ```
 module "staging_function" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "my-function"
   lambda_path     = "../lambda/my-function"
@@ -105,7 +105,7 @@ module "staging_function" {
 
 ```
 module "stream_processor" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "dynamodb-stream-processor"
   lambda_path     = "../lambda/stream-processor"
@@ -131,7 +131,7 @@ resource "aws_lambda_event_source_mapping" "dynamodb_stream" {
 
 ```
 module "api_endpoint" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "api-endpoint"
   lambda_path     = "../lambda/api"
@@ -165,7 +165,7 @@ data "terraform_remote_state" "global" {
 }
 
 module "my_lambda" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//lambda?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
 
   lambda_name     = "my-function"
   lambda_path     = "../lambda/my-function"

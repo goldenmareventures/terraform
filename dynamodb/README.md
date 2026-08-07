@@ -4,7 +4,7 @@
 
 ```
 module "archive_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name  = "archived-data"
   table_class = "STANDARD_INFREQUENT_ACCESS"
@@ -22,7 +22,7 @@ module "archive_table" {
 
 ```
 module "users_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name = "users"
   hash_key   = "userId"
@@ -54,7 +54,7 @@ module "users_table" {
 
 ```
 module "sessions_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name = "sessions"
   hash_key   = "userId"
@@ -74,7 +74,7 @@ module "sessions_table" {
 
 ```
 module "orders_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name = "orders"
   hash_key   = "orderId"
@@ -99,7 +99,7 @@ resource "aws_lambda_event_source_mapping" "orders_stream" {
 
 ```
 module "high_traffic_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name    = "high-traffic"
   billing_mode  = "PROVISIONED"
@@ -118,7 +118,7 @@ module "high_traffic_table" {
 
 ```
 module "archive_table" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//dynamodb?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
 
   table_name  = "archived-data"
   table_class = "STANDARD_INFREQUENT_ACCESS"

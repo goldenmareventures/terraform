@@ -1,4 +1,5 @@
 # modules/rds-aurora/README.md
+
 # Aurora Module
 
 Terraform module for Amazon Aurora clusters. The module supports Aurora MySQL and Aurora PostgreSQL, provisioned instances and Serverless v2.
@@ -20,7 +21,7 @@ Terraform module for Amazon Aurora clusters. The module supports Aurora MySQL an
 
 ```terraform
 module "orders_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds-aurora?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//rds-aurora?ref=v1.0.0"
 
   cluster_identifier = "orders-prod"
   engine             = "aurora-mysql"
@@ -50,7 +51,7 @@ module "orders_db" {
 
 ```terraform
 module "app_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds-aurora?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//rds-aurora?ref=v1.0.0"
 
   cluster_identifier = "app-prod"
   engine             = "aurora-postgresql"
@@ -79,7 +80,7 @@ Set `serverlessv2_scaling`. The module then uses `db.serverless` for every insta
 
 ```terraform
 module "reporting_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds-aurora?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//rds-aurora?ref=v1.0.0"
 
   cluster_identifier = "reporting-dev"
   engine             = "aurora-postgresql"
@@ -113,7 +114,7 @@ Pass the family when you pass parameters. The module does not guess the family f
 
 ```terraform
 module "orders_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds-aurora?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//rds-aurora?ref=v1.0.0"
 
   cluster_identifier = "orders-prod"
   engine             = "aurora-mysql"
@@ -155,82 +156,82 @@ locals {
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| cluster_identifier | Identifier for the cluster | string | - | yes |
-| engine | aurora-mysql or aurora-postgresql | string | - | yes |
-| engine_version | Engine version | string | - | yes |
-| master_username | Master username | string | - | yes |
-| database_name | Initial database name | string | null | no |
-| port | Cluster port | number | 3306 or 5432 | no |
-| manage_master_user_password | Manage the password in Secrets Manager | bool | true | no |
-| master_password | Master password when not managed | string | null | no |
-| master_user_secret_kms_key_id | KMS key for the managed secret | string | null | no |
-| create_subnet_group | Create a subnet group | bool | true | no |
-| subnet_group_name | Subnet group name | string | null | no |
-| subnet_ids | Subnets for the created subnet group | list(string) | [] | no |
-| vpc_security_group_ids | Security groups for the cluster | list(string) | [] | no |
-| availability_zones | Availability zones | list(string) | null | no |
-| publicly_accessible | Make instances public | bool | false | no |
-| instances | Map of instances by identifier | map(object) | {} | no |
-| instance_class | Default instance class | string | db.t4g.medium | no |
-| serverlessv2_scaling | Serverless v2 scaling | object | null | no |
-| cluster_parameter_group_family | Cluster parameter group family | string | null | no |
-| cluster_parameters | Cluster parameters | list(object) | [] | no |
-| cluster_parameter_group_name | Existing cluster parameter group | string | null | no |
-| instance_parameter_group_family | Instance parameter group family | string | null | no |
-| instance_parameters | Instance parameters | list(object) | [] | no |
-| instance_parameter_group_name | Existing instance parameter group | string | null | no |
-| backup_retention_period | Backup retention in days | number | 7 | no |
-| preferred_backup_window | Backup window in UTC | string | null | no |
-| preferred_maintenance_window | Maintenance window in UTC | string | null | no |
-| copy_tags_to_snapshot | Copy tags to snapshots | bool | true | no |
-| backtrack_window | Backtrack seconds, MySQL only | number | 0 | no |
-| snapshot_identifier | Snapshot to restore from | string | null | no |
-| skip_final_snapshot | Skip the final snapshot | bool | false | no |
-| final_snapshot_identifier | Final snapshot name | string | null | no |
-| storage_encrypted | Encrypt storage | bool | true | no |
-| kms_key_id | KMS key for storage | string | null | no |
-| iam_database_authentication_enabled | Enable IAM auth | bool | false | no |
-| deletion_protection | Enable deletion protection | bool | true | no |
-| apply_immediately | Apply changes immediately | bool | false | no |
-| allow_major_version_upgrade | Allow major upgrades | bool | false | no |
-| auto_minor_version_upgrade | Allow minor upgrades | bool | true | no |
-| ca_cert_identifier | CA certificate identifier | string | null | no |
-| enabled_cloudwatch_logs_exports | Logs to export | list(string) | [] | no |
-| performance_insights_enabled | Enable Performance Insights | bool | true | no |
-| performance_insights_retention_period | Retention in days | number | 7 | no |
-| performance_insights_kms_key_id | KMS key for Performance Insights | string | null | no |
-| monitoring_interval | Enhanced Monitoring seconds | number | 0 | no |
-| monitoring_role_arn | Existing monitoring role | string | null | no |
-| tags | Tags to apply | map(string) | {} | no |
+| Name                                  | Description                            | Type         | Default       | Required |
+| ------------------------------------- | -------------------------------------- | ------------ | ------------- | -------- |
+| cluster_identifier                    | Identifier for the cluster             | string       | -             | yes      |
+| engine                                | aurora-mysql or aurora-postgresql      | string       | -             | yes      |
+| engine_version                        | Engine version                         | string       | -             | yes      |
+| master_username                       | Master username                        | string       | -             | yes      |
+| database_name                         | Initial database name                  | string       | null          | no       |
+| port                                  | Cluster port                           | number       | 3306 or 5432  | no       |
+| manage_master_user_password           | Manage the password in Secrets Manager | bool         | true          | no       |
+| master_password                       | Master password when not managed       | string       | null          | no       |
+| master_user_secret_kms_key_id         | KMS key for the managed secret         | string       | null          | no       |
+| create_subnet_group                   | Create a subnet group                  | bool         | true          | no       |
+| subnet_group_name                     | Subnet group name                      | string       | null          | no       |
+| subnet_ids                            | Subnets for the created subnet group   | list(string) | []            | no       |
+| vpc_security_group_ids                | Security groups for the cluster        | list(string) | []            | no       |
+| availability_zones                    | Availability zones                     | list(string) | null          | no       |
+| publicly_accessible                   | Make instances public                  | bool         | false         | no       |
+| instances                             | Map of instances by identifier         | map(object)  | {}            | no       |
+| instance_class                        | Default instance class                 | string       | db.t4g.medium | no       |
+| serverlessv2_scaling                  | Serverless v2 scaling                  | object       | null          | no       |
+| cluster_parameter_group_family        | Cluster parameter group family         | string       | null          | no       |
+| cluster_parameters                    | Cluster parameters                     | list(object) | []            | no       |
+| cluster_parameter_group_name          | Existing cluster parameter group       | string       | null          | no       |
+| instance_parameter_group_family       | Instance parameter group family        | string       | null          | no       |
+| instance_parameters                   | Instance parameters                    | list(object) | []            | no       |
+| instance_parameter_group_name         | Existing instance parameter group      | string       | null          | no       |
+| backup_retention_period               | Backup retention in days               | number       | 7             | no       |
+| preferred_backup_window               | Backup window in UTC                   | string       | null          | no       |
+| preferred_maintenance_window          | Maintenance window in UTC              | string       | null          | no       |
+| copy_tags_to_snapshot                 | Copy tags to snapshots                 | bool         | true          | no       |
+| backtrack_window                      | Backtrack seconds, MySQL only          | number       | 0             | no       |
+| snapshot_identifier                   | Snapshot to restore from               | string       | null          | no       |
+| skip_final_snapshot                   | Skip the final snapshot                | bool         | false         | no       |
+| final_snapshot_identifier             | Final snapshot name                    | string       | null          | no       |
+| storage_encrypted                     | Encrypt storage                        | bool         | true          | no       |
+| kms_key_id                            | KMS key for storage                    | string       | null          | no       |
+| iam_database_authentication_enabled   | Enable IAM auth                        | bool         | false         | no       |
+| deletion_protection                   | Enable deletion protection             | bool         | true          | no       |
+| apply_immediately                     | Apply changes immediately              | bool         | false         | no       |
+| allow_major_version_upgrade           | Allow major upgrades                   | bool         | false         | no       |
+| auto_minor_version_upgrade            | Allow minor upgrades                   | bool         | true          | no       |
+| ca_cert_identifier                    | CA certificate identifier              | string       | null          | no       |
+| enabled_cloudwatch_logs_exports       | Logs to export                         | list(string) | []            | no       |
+| performance_insights_enabled          | Enable Performance Insights            | bool         | true          | no       |
+| performance_insights_retention_period | Retention in days                      | number       | 7             | no       |
+| performance_insights_kms_key_id       | KMS key for Performance Insights       | string       | null          | no       |
+| monitoring_interval                   | Enhanced Monitoring seconds            | number       | 0             | no       |
+| monitoring_role_arn                   | Existing monitoring role               | string       | null          | no       |
+| tags                                  | Tags to apply                          | map(string)  | {}            | no       |
 
 ### Instance object
 
-| Name | Description | Type | Default |
-|------|-------------|------|---------|
-| instance_class | Overrides the module instance_class | string | null |
-| promotion_tier | Failover priority, 0 is highest | number | 1 |
-| availability_zone | Availability zone for this instance | string | null |
+| Name              | Description                         | Type   | Default |
+| ----------------- | ----------------------------------- | ------ | ------- |
+| instance_class    | Overrides the module instance_class | string | null    |
+| promotion_tier    | Failover priority, 0 is highest     | number | 1       |
+| availability_zone | Availability zone for this instance | string | null    |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| cluster_id | Cluster identifier |
-| cluster_arn | ARN of the cluster |
-| cluster_resource_id | Resource ID for IAM auth policies |
-| cluster_endpoint | Writer endpoint |
-| cluster_reader_endpoint | Reader endpoint |
-| cluster_port | Port |
-| database_name | Initial database name |
-| master_username | Master username |
-| master_user_secret_arn | ARN of the managed password secret |
-| instance_endpoints | Map of identifier to endpoint |
-| instance_identifiers | List of instance identifiers |
-| subnet_group_name | Subnet group in use |
-| cluster_parameter_group_name | Cluster parameter group in use |
-| monitoring_role_arn | Enhanced Monitoring role in use |
+| Name                         | Description                        |
+| ---------------------------- | ---------------------------------- |
+| cluster_id                   | Cluster identifier                 |
+| cluster_arn                  | ARN of the cluster                 |
+| cluster_resource_id          | Resource ID for IAM auth policies  |
+| cluster_endpoint             | Writer endpoint                    |
+| cluster_reader_endpoint      | Reader endpoint                    |
+| cluster_port                 | Port                               |
+| database_name                | Initial database name              |
+| master_username              | Master username                    |
+| master_user_secret_arn       | ARN of the managed password secret |
+| instance_endpoints           | Map of identifier to endpoint      |
+| instance_identifiers         | List of instance identifiers       |
+| subnet_group_name            | Subnet group in use                |
+| cluster_parameter_group_name | Cluster parameter group in use     |
+| monitoring_role_arn          | Enhanced Monitoring role in use    |
 
 ## Notes
 

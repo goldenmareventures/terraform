@@ -4,7 +4,7 @@
 
 ```
 module "lambda_role" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/role?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/role?ref=v1.0.0"
 
   role_name = "my-lambda-execution-role"
   description = "Lambda execution role"
@@ -41,7 +41,7 @@ module "lambda_role" {
 
 ```
 module "scheduler_role" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/role?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/role?ref=v1.0.0"
 
   role_name = "eventbridge-scheduler-role"
 

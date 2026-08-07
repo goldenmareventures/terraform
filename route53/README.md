@@ -17,7 +17,7 @@ Creates and manages Route53 hosted zones and DNS records.
 
 ```
 module "example_com" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 
@@ -64,7 +64,7 @@ output "name_servers" {
 
 ```
 module "myapp_com" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "myapp.com"
 
@@ -95,7 +95,7 @@ module "myapp_com" {
 
 ```
 module "api_example_com" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "api.example.com"
 
@@ -117,7 +117,7 @@ module "api_example_com" {
 
 ```
 module "weighted_routing" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 
@@ -150,7 +150,7 @@ module "weighted_routing" {
 
 ```
 module "latency_routing" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 
@@ -183,7 +183,7 @@ module "latency_routing" {
 
 ```
 module "failover_routing" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 
@@ -226,7 +226,7 @@ resource "aws_route53_health_check" "primary" {
 
 ```
 module "email_domain" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 
@@ -277,7 +277,7 @@ module "email_domain" {
 
 ```
 module "internal_domain" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "internal.example.com"
   vpc_id      = "vpc-12345678"
@@ -303,7 +303,7 @@ module "internal_domain" {
 
 ```
 module "subdomain_delegation" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//route53?ref=v1.3.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//route53?ref=v1.0.0"
 
   domain_name = "example.com"
 

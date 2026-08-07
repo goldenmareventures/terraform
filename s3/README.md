@@ -21,7 +21,7 @@ Terraform module for creating Amazon S3 buckets with support for versioning, enc
 
 ```terraform
 module "my_bucket" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.7.1"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name = "my-application-data"
   tags        = var.default_tags
@@ -32,7 +32,7 @@ module "my_bucket" {
 
 ```terraform
 module "artifacts" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.7.1"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name        = "build-artifacts"
   versioning_enabled = true
@@ -64,7 +64,7 @@ module "artifacts" {
 
 ```terraform
 module "uploads" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.7.1"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name = "user-uploads"
 
@@ -85,7 +85,7 @@ module "uploads" {
 
 ```terraform
 module "sensitive_data" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.7.1"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name        = "sensitive-data"
   versioning_enabled = true
@@ -104,7 +104,7 @@ module "sensitive_data" {
 
 ```terraform
 module "api_assets" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.7.1"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name = "api-assets"
 
@@ -126,7 +126,7 @@ module "api_assets" {
 
 ```
 module "website" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.8.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name = "my-static-site"
 
@@ -149,7 +149,7 @@ module "website" {
 
 ```
 module "redirect" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//s3?ref=v1.8.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//s3?ref=v1.0.0"
 
   bucket_name = "old-domain-redirect"
 

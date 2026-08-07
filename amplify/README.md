@@ -21,7 +21,7 @@ locals {
 }
 
 module "amplify" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//amplify?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//amplify?ref=v1.0.0"
 
   app_name           = var.project_name
   repository_url     = var.repo_url
@@ -64,7 +64,7 @@ module "amplify" {
 
 ```
 module "amplify" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//amplify?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//amplify?ref=v1.0.0"
 
   app_name         = "my-app"
   repository_url   = "https://bitbucket.org/user/repo"

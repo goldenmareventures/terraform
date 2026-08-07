@@ -16,7 +16,7 @@ Creates an IAM user with optional access keys and policy attachments.
 
 ```
 module "basic_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name = "my-app-user"
 }
@@ -35,7 +35,7 @@ output "secret_access_key" {
 
 ```
 module "s3_backup_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name = "s3-backup-user"
 
@@ -60,7 +60,7 @@ module "s3_backup_user" {
 
 ```
 module "readonly_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name = "readonly-user"
 
@@ -74,7 +74,7 @@ module "readonly_user" {
 
 ```
 module "app_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name = "app-deploy-user"
 
@@ -119,7 +119,7 @@ For users that only need console access or temporary credentials:
 
 ```
 module "console_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name         = "console-user"
   create_access_key = false
@@ -134,7 +134,7 @@ module "console_user" {
 
 ```
 module "api_user" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/user?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/user?ref=v1.0.0"
 
   user_name = "api-user"
 

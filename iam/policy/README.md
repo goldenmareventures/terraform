@@ -4,7 +4,7 @@
 
 ```
 module "ses_send_policy" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam/policy?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/policy?ref=v1.0.0"
 
   policy_name = "SESSendEmails"
   description = "Allow sending emails via SES"
@@ -28,7 +28,7 @@ module "ses_send_policy" {
 
 ```
 module "lambda_role" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//iam-role?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//iam/role?ref=v1.0.0"
 
   role_name = "my-lambda-role"
 

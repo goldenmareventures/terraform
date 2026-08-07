@@ -21,7 +21,7 @@ Terraform module for creating Amazon CloudFront distributions with support for m
 
 ```terraform
 module "cdn" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//cloudfront?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//cloudfront?ref=v1.0.0"
 
   comment             = "Static website CDN"
   default_root_object = "index.html"
@@ -68,7 +68,7 @@ module "cdn" {
 
 ```terraform
 module "cdn" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//cloudfront?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//cloudfront?ref=v1.0.0"
 
   comment = "API CDN"
   aliases = ["api.example.com"]
@@ -112,7 +112,7 @@ resource "aws_cloudfront_origin_access_control" "s3_oac" {
 }
 
 module "cdn" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//cloudfront?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//cloudfront?ref=v1.0.0"
 
   comment             = "Static website CDN"
   default_root_object = "index.html"
@@ -139,7 +139,7 @@ module "cdn" {
 
 ```terraform
 module "cdn" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//cloudfront?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//cloudfront?ref=v1.0.0"
 
   comment             = "Multi-origin CDN"
   default_root_object = "index.html"

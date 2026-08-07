@@ -16,7 +16,7 @@ Creates and manages AWS SES email templates, configuration sets, and event desti
 
 ```
 module "ses_templates" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   email_templates = {
     welcome = {
@@ -55,7 +55,7 @@ locals {
 }
 
 module "ses_templates" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   email_templates = local.email_templates
 }
@@ -65,7 +65,7 @@ module "ses_templates" {
 
 ```
 module "ses_with_metrics" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   email_templates = {
     welcome = {
@@ -103,7 +103,7 @@ module "ses_with_metrics" {
 
 ```
 module "ses_multi" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   configuration_sets = {
     transactional = {
@@ -147,7 +147,7 @@ resource "aws_sns_topic" "ses_bounces" {
 }
 
 module "ses_with_sns" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   configuration_sets = {
     main = {
@@ -174,7 +174,7 @@ resource "aws_sns_topic" "ses_bounces" {
 }
 
 module "ses_complete" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ses?ref=v1.0.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ses?ref=v1.0.0"
 
   # Email templates
   email_templates = {

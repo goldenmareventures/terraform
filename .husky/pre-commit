@@ -1,0 +1,7 @@
+echo "🔍 Formatting Terraform files..."
+terraform fmt -recursive -check || {
+  echo "❌ Terraform formatting issues found. Run 'terraform fmt -recursive' to fix."
+  exit 1
+}
+
+echo "✅ Terraform formatting passed"

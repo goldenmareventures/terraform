@@ -1,0 +1,40 @@
+echo "🧪 Validating Terraform modules..."
+
+# Function to validate a module directory
+validate_module() {
+  module_path="$1"
+  module_name="$2"
+
+  echo "Validating $module_name..."
+
+  cd "$module_path" || exit 1
+
+  # Initialize without backend
+  terraform init -backend=false > /dev/null 2>&1
+
+  # Validate
+  if ! terraform validate > /dev/null 2>&1; then
+    echo "❌ Validation failed for $module_name"
+    cd - > /dev/null
+    exit 1
+  fi
+
+  cd - > /dev/null
+}
+
+# Find all directories containing .tf files and validate them
+find . -type f -name "*.tf" -exec dirname {} \; | sort -u | while read -r module_dir; do
+  # Get relative path
+  relative_path="${module_dir#./}"
+
+  # Skip non-module directories
+  case "$relative_path" in
+    node_modules/*|.git/*|.husky/*|scripts/*)
+      continue
+      ;;
+  esac
+
+  validate_module "$module_dir" "$relative_path"
+done
+
+echo "✅ All modules validated successfully"

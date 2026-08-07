@@ -179,7 +179,7 @@ module "redirect" {
 | block_public_policy     | Block public bucket policies              | bool         | true    | no       |
 | ignore_public_acls      | Ignore public ACLs                        | bool         | true    | no       |
 | restrict_public_buckets | Restrict public bucket policies           | bool         | true    | no       |
-| lifecycle_rules         | List of lifecycle rules                   | list(object) | []      | no       |
+| lifecycle_rules         | List of lifecycle rules. Each rule aborts incomplete multipart uploads after 7 days unless `abort_incomplete_multipart_upload_days` is set | list(object) | []      | no       |
 | cors_rules              | List of CORS rules                        | list(object) | []      | no       |
 | policy                  | JSON bucket policy document               | string       | null    | no       |
 | lambda_notifications    | Lambda function notifications             | list(object) | []      | no       |
@@ -213,6 +213,10 @@ AES256 encryption is enabled by default. To use KMS encryption, provide a `kms_k
 ### Lifecycle Rules
 
 Storage class transitions must follow this order: STANDARD → STANDARD_IA → INTELLIGENT_TIERING → ONEZONE_IA → GLACIER_IR → GLACIER → DEEP_ARCHIVE.
+
+### Incomplete Multipart Uploads
+
+Every lifecycle rule aborts incomplete multipart uploads after 7 days. Set `abort_incomplete_multipart_upload_days` on a rule to change the value. You cannot disable it. Orphaned upload parts are billed forever and do not appear in the object list.
 
 ### Notifications
 

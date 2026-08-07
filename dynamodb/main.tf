@@ -53,6 +53,16 @@ resource "aws_dynamodb_table" "table" {
     enabled = var.point_in_time_recovery_enabled
   }
 
+  # DynamoDB always encrypts at rest. This block only moves the table from the
+  # AWS owned key to a customer managed key.
+  dynamic "server_side_encryption" {
+    for_each = var.kms_key_arn != null ? [1] : []
+    content {
+      enabled     = true
+      kms_key_arn = var.kms_key_arn
+    }
+  }
+
   deletion_protection_enabled = var.deletion_protection_enabled
   table_class                 = var.table_class
 

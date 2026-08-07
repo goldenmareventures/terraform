@@ -114,6 +114,27 @@ module "high_traffic_table" {
 }
 ```
 
+## Table with a customer managed KMS key:
+
+DynamoDB always encrypts at rest. `kms_key_arn` moves the table from the AWS
+owned key to a customer managed key, which adds key rotation control and audit
+separation. Omit it unless a compliance requirement demands it.
+
+```
+module "phi_table" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//dynamodb?ref=v1.0.0"
+
+  table_name = "patient-records"
+  hash_key   = "recordId"
+
+  attributes = [
+    { name = "recordId", type = "S" }
+  ]
+
+  kms_key_arn = aws_kms_key.dynamodb.arn
+}
+```
+
 ## Infrequent access table (cost savings):
 
 ```

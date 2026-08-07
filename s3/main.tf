@@ -86,11 +86,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "lifecycle" {
         }
       }
 
-      dynamic "abort_incomplete_multipart_upload" {
-        for_each = lookup(rule.value, "abort_incomplete_multipart_upload_days", null) != null ? [1] : []
-        content {
-          days_after_initiation = rule.value.abort_incomplete_multipart_upload_days
-        }
+      # Always set. Orphaned multipart parts are billed forever and do not appear
+      # in the object list.
+      abort_incomplete_multipart_upload {
+        days_after_initiation = coalesce(rule.value.abort_incomplete_multipart_upload_days, 7)
       }
     }
   }

@@ -122,6 +122,12 @@ variable "write_capacity" {
   default     = null
 }
 
+variable "kms_key_arn" {
+  description = "Customer managed KMS key ARN for table encryption. Null uses the AWS owned key."
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "A map of tags to assign to resources"
   type        = map(string)

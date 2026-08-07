@@ -1,0 +1,17 @@
+quiet: true
+framework:
+  - terraform
+skip-check:
+  - CKV_AWS_117 # Ensure that AWS Lambda function is configured inside a VPC - Opt-in via vpc_subnet_ids. A VPC function needs a NAT gateway to reach the internet.
+  - CKV_AWS_174 # Verify CloudFront Distribution Viewer Certificate is using TLS v1.2 or higher - Default is TLSv1.2_2021. AWS rejects a minimum version on the CloudFront default certificate.
+  - CKV_AWS_273 # Ensure access is controlled through SSO and not AWS IAM defined users - The iam/user module exists for service users. Human access uses SSO and the iam/role module.
+  - CKV_AWS_300 # Ensure S3 lifecycle configuration sets period for aborting failed uploads - Already set to 7 days on every rule. Checkov cannot evaluate the coalesce inside the dynamic block.
+  - CKV_AWS_272 # Ensure AWS Lambda function is configured to validate code-signing - Needs a Signer profile and signed packages. This module deploys a locally built ZIP.
+  - CKV_AWS_338 # Configuration exists - Caller decides
+  - CKV_AWS_50 # Configuration exists - Caller decides
+  - CKV_AWS_324 # Configuration exists - Caller decides
+  - CKV_AWS_162 # Configuration exists - Caller decides
+  - CKV_AWS_118 # Configuration exists - Caller decides
+download-external-modules: true
+evaluate-variables: true
+output: cli

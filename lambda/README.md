@@ -6,9 +6,13 @@ Creates an AWS Lambda function with optional EventBridge trigger integration.
 
 - Deploy Lambda functions from local ZIP files
 - Automatic source code change detection
-- Environment variable configuration
+- Environment variable configuration, with optional KMS customer managed key
 - EventBridge (CloudWatch Events) trigger integration
 - Configurable runtime, timeout, and handler
+- Dead letter queue for failed asynchronous invocations
+- X-Ray tracing
+- Function level concurrency limit
+- Optional VPC attachment
 - Environment-based tagging
 
 ## Usage
@@ -151,6 +155,64 @@ resource "aws_apigatewayv2_integration" "lambda" {
 }
 ```
 
+### Asynchronous Function with a Dead Letter Queue
+
+Use this for any function invoked by S3, SNS, or EventBridge. Without a DLQ, an
+event that fails every retry is dropped silently.
+
+```
+resource "aws_sqs_queue" "dlq" {
+  name = "image-processor-dlq"
+}
+
+module "image_processor" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
+
+  lambda_name     = "image-processor"
+  lambda_path     = "../lambda/image-processor"
+  lambda_role_arn = aws_iam_role.lambda_execution.arn
+
+  dead_letter_target_arn         = aws_sqs_queue.dlq.arn
+  reserved_concurrent_executions = 10
+  tracing_mode                   = "Active"
+}
+```
+
+### Function Inside a VPC
+
+Only for functions that reach Aurora or another private resource.
+
+```
+module "db_worker" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
+
+  lambda_name     = "db-worker"
+  lambda_path     = "../lambda/db-worker"
+  lambda_role_arn = aws_iam_role.lambda_vpc.arn
+
+  vpc_subnet_ids         = var.private_subnet_ids
+  vpc_security_group_ids = [aws_security_group.lambda.id]
+}
+```
+
+### Environment Variables with a Customer Managed Key
+
+```
+module "secure_handler" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//lambda?ref=v1.0.0"
+
+  lambda_name     = "secure-handler"
+  lambda_path     = "../lambda/secure-handler"
+  lambda_role_arn = aws_iam_role.lambda_execution.arn
+
+  kms_key_arn = aws_kms_key.lambda.arn
+
+  env_vars = {
+    TENANT_ID = var.tenant_id
+  }
+}
+```
+
 ### Using with Global IAM Role
 
 ```
@@ -237,17 +299,26 @@ npm run build
 
 ## Inputs
 
-| Name                  | Description                                              | Type        | Default           | Required |
-| --------------------- | -------------------------------------------------------- | ----------- | ----------------- | -------- |
-| lambda_name           | Lambda function name                                     | string      | -                 | yes      |
-| lambda_path           | Path to Lambda directory relative to terraform directory | string      | -                 | yes      |
-| lambda_role_arn       | ARN of the IAM role for the Lambda function              | string      | -                 | yes      |
-| runtime               | Runtime environment for the Lambda function              | string      | `"nodejs24.x"`    | no       |
-| handler               | Lambda handler                                           | string      | `"index.handler"` | no       |
-| timeout               | Lambda function timeout in seconds                       | number      | `3`               | no       |
-| env_vars              | Environment variables                                    | map(string) | `{}`              | no       |
-| notification_rule_arn | ARN of EventBridge rule to add as trigger                | string      | `null`            | no       |
-| environment           | Deployment environment                                   | string      | `"prod"`          | no       |
+| Name                           | Description                                              | Type         | Default           | Required |
+| ------------------------------ | -------------------------------------------------------- | ------------ | ----------------- | -------- |
+| lambda_name                    | Lambda function name                                     | string       | -                 | yes      |
+| lambda_path                    | Path to Lambda directory relative to terraform directory | string       | -                 | yes      |
+| lambda_role_arn                | ARN of the IAM role for the Lambda function              | string       | -                 | yes      |
+| runtime                        | Runtime environment for the Lambda function              | string       | `"nodejs24.x"`    | no       |
+| handler                        | Lambda handler                                           | string       | `"index.handler"` | no       |
+| timeout                        | Lambda function timeout in seconds                       | number       | `3`               | no       |
+| memory_size                    | Memory in MB for the function                            | number       | `128`             | no       |
+| layers                         | List of Lambda layer ARNs                                | list(string) | `[]`              | no       |
+| env_vars                       | Environment variables                                    | map(string)  | `{}`              | no       |
+| kms_key_arn                    | KMS CMK ARN for environment variable encryption          | string       | `null`            | no       |
+| dead_letter_target_arn         | SQS or SNS ARN for failed async invocations              | string       | `null`            | no       |
+| tracing_mode                   | X-Ray mode: `Active`, `PassThrough`, or null             | string       | `null`            | no       |
+| reserved_concurrent_executions | Function level concurrency limit                         | number       | `null`            | no       |
+| vpc_subnet_ids                 | Subnet IDs for VPC attachment                            | list(string) | `[]`              | no       |
+| vpc_security_group_ids         | Security group IDs for VPC attachment                    | list(string) | `[]`              | no       |
+| notification_rule_arn          | ARN of EventBridge rule to add as trigger                | string       | `null`            | no       |
+| environment                    | Deployment environment                                   | string       | `"prod"`          | no       |
+| tags                           | Tags to apply to the function                            | map(string)  | `{}`              | no       |
 
 ## Outputs
 
@@ -266,6 +337,12 @@ npm run build
 - EventBridge permission is only created if `notification_rule_arn` is provided
 - Maximum deployment package size: 50 MB (zipped), 250 MB (unzipped)
 - Maximum timeout: 900 seconds (15 minutes)
+- `kms_key_arn` is applied only when `env_vars` is not empty. AWS rejects the key otherwise.
+- `dead_letter_config` applies to asynchronous invocations only. Synchronous callers get the error directly.
+- The execution role needs `sqs:SendMessage` or `sns:Publish` on the DLQ target.
+- The execution role needs `xray:PutTraceSegments` and `xray:PutTelemetryRecords` when `tracing_mode` is set.
+- `reserved_concurrent_executions = 0` stops all invocations. Use null for the unreserved account pool.
+- A VPC function needs a NAT gateway to reach the internet. The execution role needs `AWSLambdaVPCAccessExecutionRole`.
 
 ## IAM Role Requirements
 

@@ -1,3 +1,28 @@
+echo "🔒 Scanning Terraform with checkov..."
+
+if ! command -v checkov > /dev/null 2>&1; then
+  echo "❌ checkov is not installed. Install it, then push again."
+  echo "   brew install checkov"
+  exit 1
+fi
+
+if ! checkov -d . --skip-path node_modules --compact; then
+  echo ""
+  echo "❌ checkov found failed checks. Push blocked."
+  echo ""
+  echo "Address every failed check in one of two ways:"
+  echo "  1. Fix the module code."
+  echo "  2. Add the check ID to skip-check in .checkov.yml, followed by a"
+  echo "     comment with the check title and the specific reason it is ignored."
+  echo ""
+  echo "     - CKV_AWS_000 # <check title> - <specific reason>"
+  echo ""
+  echo "Never add a skip without a reason."
+  exit 1
+fi
+
+echo "✅ checkov passed"
+echo ""
 echo "🧪 Validating Terraform modules..."
 
 # Function to validate a module directory

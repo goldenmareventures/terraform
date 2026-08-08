@@ -73,9 +73,9 @@ variable "enable_deletion_protection" {
 }
 
 variable "drop_invalid_header_fields" {
-  description = "Drop request headers that do not match RFC 7230. Turn this on unless a client sends headers with underscores."
+  description = "Drop request headers that do not match RFC 7230. Turn this off only when a client sends headers with underscores."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "preserve_host_header" {

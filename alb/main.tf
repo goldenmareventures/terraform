@@ -92,6 +92,7 @@ resource "aws_vpc_security_group_ingress_rule" "ipv4" {
   for_each = local.sg_ingress_ipv4
 
   security_group_id = aws_security_group.alb[0].id
+  description       = "Listener ${each.value.port} from ${each.value.cidr}"
   cidr_ipv4         = each.value.cidr
   from_port         = each.value.port
   to_port           = each.value.port
@@ -104,6 +105,7 @@ resource "aws_vpc_security_group_ingress_rule" "ipv6" {
   for_each = local.sg_ingress_ipv6
 
   security_group_id = aws_security_group.alb[0].id
+  description       = "Listener ${each.value.port} from ${each.value.cidr}"
   cidr_ipv6         = each.value.cidr
   from_port         = each.value.port
   to_port           = each.value.port
@@ -116,6 +118,7 @@ resource "aws_vpc_security_group_egress_rule" "alb" {
   for_each = local.sg_egress
 
   security_group_id = aws_security_group.alb[0].id
+  description       = "All egress to ${each.value}"
   cidr_ipv4         = each.value
   ip_protocol       = "-1"
 

@@ -119,9 +119,9 @@ variable "kms_key_id" {
 }
 
 variable "transit_encryption_enabled" {
-  description = "Encrypt data in transit. Clients must connect over TLS when this is true."
+  description = "Encrypt data in transit. Clients must connect over TLS when this is true. Memcached needs engine 1.6.12 or later."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "auth_token" {

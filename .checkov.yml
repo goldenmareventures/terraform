@@ -2,16 +2,28 @@ quiet: true
 framework:
   - terraform
 skip-check:
+  # Module design decisions. The module cannot satisfy the check.
   - CKV_AWS_117 # Ensure that AWS Lambda function is configured inside a VPC - Opt-in via vpc_subnet_ids. A VPC function needs a NAT gateway to reach the internet.
   - CKV_AWS_174 # Verify CloudFront Distribution Viewer Certificate is using TLS v1.2 or higher - Default is TLSv1.2_2021. AWS rejects a minimum version on the CloudFront default certificate.
   - CKV_AWS_273 # Ensure access is controlled through SSO and not AWS IAM defined users - The iam/user module exists for service users. Human access uses SSO and the iam/role module.
   - CKV_AWS_300 # Ensure S3 lifecycle configuration sets period for aborting failed uploads - Already set to 7 days on every rule. Checkov cannot evaluate the coalesce inside the dynamic block.
   - CKV_AWS_272 # Ensure AWS Lambda function is configured to validate code-signing - Needs a Signer profile and signed packages. This module deploys a locally built ZIP.
-  - CKV_AWS_338 # Configuration exists - Caller decides
-  - CKV_AWS_50 # Configuration exists - Caller decides
-  - CKV_AWS_324 # Configuration exists - Caller decides
-  - CKV_AWS_162 # Configuration exists - Caller decides
-  - CKV_AWS_118 # Configuration exists - Caller decides
+
+  # False positives. The module is already correct.
+  - CKV_AWS_332 # Ensure ECS Fargate services run on the latest Fargate platform version - ecs/service var.platform_version. Null means AWS uses LATEST. Checkov only matches the literal string.
+
+  # Caller decides. A variable exists and the caller sets it per environment.
+  # Each caller project must run its own checkov scan. This file does not cover them.
+  - CKV_AWS_338 # Ensure CloudWatch log groups retains logs for at least 1 year - cloudwatch var.retention_in_days, ecs/service var.log_retention_in_days
+  - CKV_AWS_50 # X-Ray tracing is enabled for Lambda - lambda var.tracing_mode
+  - CKV_AWS_324 # Ensure that RDS Cluster log capture is enabled - rds-aurora var.enabled_cloudwatch_logs_exports
+  - CKV_AWS_162 # Ensure RDS cluster has IAM authentication enabled - rds-aurora var.iam_database_authentication_enabled
+  - CKV_AWS_118 # Ensure that enhanced monitoring is enabled for Amazon RDS instances - rds-aurora var.monitoring_interval
+  - CKV_AWS_2 # Ensure ALB protocol is HTTPS - alb var.listeners[*].protocol. An HTTP listener that redirects to HTTPS is a supported and correct pattern.
+  - CKV_AWS_150 # Ensure that Load Balancer has deletion protection enabled - alb var.enable_deletion_protection. Default stays false so terraform destroy works in dev.
+  - CKV_AWS_51 # Ensure ECR Image Tags are immutable - ecr var.image_tag_mutability. Default is IMMUTABLE. The caller sets MUTABLE when a pipeline overwrites a tag.
+  - CKV_AWS_30 # Ensure ElastiCache Replication Group data is encrypted in transit - elasticache var.transit_encryption_enabled. Default is true.
+  - CKV_AWS_31 # Ensure ElastiCache Replication Group is encrypted in transit and has auth token - elasticache var.auth_token or var.user_group_ids. RBAC user groups are the preferred alternative.
 download-external-modules: true
 evaluate-variables: true
 output: cli

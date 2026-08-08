@@ -142,6 +142,7 @@ resource "aws_vpc_security_group_ingress_rule" "source_sg" {
   for_each = local.sg_ingress_source_sg
 
   security_group_id            = aws_security_group.service[0].id
+  description                  = "Container port ${each.value.port} from ${each.value.source}"
   referenced_security_group_id = each.value.source
   from_port                    = each.value.port
   to_port                      = each.value.port
@@ -154,6 +155,7 @@ resource "aws_vpc_security_group_ingress_rule" "ipv4" {
   for_each = local.sg_ingress_ipv4
 
   security_group_id = aws_security_group.service[0].id
+  description       = "Container port ${each.value.port} from ${each.value.cidr}"
   cidr_ipv4         = each.value.cidr
   from_port         = each.value.port
   to_port           = each.value.port
@@ -166,6 +168,7 @@ resource "aws_vpc_security_group_egress_rule" "service" {
   for_each = local.sg_egress
 
   security_group_id = aws_security_group.service[0].id
+  description       = "All egress to ${each.value}"
   cidr_ipv4         = each.value
   ip_protocol       = "-1"
 

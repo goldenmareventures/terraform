@@ -5,9 +5,9 @@ variable "repository_name" {
 }
 
 variable "image_tag_mutability" {
-  description = "Tag mutability setting (MUTABLE or IMMUTABLE)"
+  description = "Tag mutability setting (MUTABLE or IMMUTABLE). IMMUTABLE keeps a tag pinned to one image digest. Set MUTABLE only when a pipeline overwrites a tag such as latest."
   type        = string
-  default     = "MUTABLE"
+  default     = "IMMUTABLE"
 }
 
 variable "force_delete" {

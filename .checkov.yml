@@ -11,6 +11,8 @@ skip-check:
 
   # False positives. The module is already correct.
   - CKV_AWS_332 # Ensure ECS Fargate services run on the latest Fargate platform version - ecs/service var.platform_version. Null means AWS uses LATEST. Checkov only matches the literal string.
+  - CKV_AWS_16 # Ensure all data stored in the RDS is securely encrypted at rest - rds aws_db_instance.replicas. A read replica inherits encryption and the KMS key from its source. The primary defaults var.storage_encrypted to true.
+  - CKV_AWS_133 # Ensure that RDS instances has backup policy - rds read_replicas[*].backup_retention_period. A replica holds no authoritative copy, so 0 is correct. The primary retains 7 days.
 
   # Caller decides. A variable exists and the caller sets it per environment.
   # Each caller project must run its own checkov scan. This file does not cover them.
@@ -18,12 +20,15 @@ skip-check:
   - CKV_AWS_50 # X-Ray tracing is enabled for Lambda - lambda var.tracing_mode
   - CKV_AWS_324 # Ensure that RDS Cluster log capture is enabled - rds-aurora var.enabled_cloudwatch_logs_exports
   - CKV_AWS_162 # Ensure RDS cluster has IAM authentication enabled - rds-aurora var.iam_database_authentication_enabled
-  - CKV_AWS_118 # Ensure that enhanced monitoring is enabled for Amazon RDS instances - rds-aurora var.monitoring_interval
+  - CKV_AWS_118 # Ensure that enhanced monitoring is enabled for Amazon RDS instances - rds-aurora/rds var.monitoring_interval
   - CKV_AWS_2 # Ensure ALB protocol is HTTPS - alb var.listeners[*].protocol. An HTTP listener that redirects to HTTPS is a supported and correct pattern.
   - CKV_AWS_150 # Ensure that Load Balancer has deletion protection enabled - alb var.enable_deletion_protection. Default stays false so terraform destroy works in dev.
   - CKV_AWS_51 # Ensure ECR Image Tags are immutable - ecr var.image_tag_mutability. Default is IMMUTABLE. The caller sets MUTABLE when a pipeline overwrites a tag.
   - CKV_AWS_30 # Ensure ElastiCache Replication Group data is encrypted in transit - elasticache var.transit_encryption_enabled. Default is true.
   - CKV_AWS_31 # Ensure ElastiCache Replication Group is encrypted in transit and has auth token - elasticache var.auth_token or var.user_group_ids. RBAC user groups are the preferred alternative.
+  - CKV_AWS_353 # Ensure that RDS instances have performance insights enabled - rds var.performance_insights_enabled. Not supported on micro and small instance classes.
+  - CKV_AWS_129 # Ensure that respective logs of Amazon RDS are enabled - rds var.enabled_cloudwatch_logs_exports. Valid values differ by engine and log ingest is billed per GB.
+  - CKV_AWS_157 # Ensure that RDS instances have Multi-AZ enabled - rds var.multi_az and read_replicas[*].multi_az. Multi-AZ roughly doubles instance cost.
 download-external-modules: true
 evaluate-variables: true
 output: cli

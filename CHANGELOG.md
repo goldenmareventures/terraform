@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.1.0%0Dv1.2.0#diff) (2026-08-09)
+
+
+### Features
+
+* new rds module ([48b4986](https://github.com/goldenmareventures/terraform/commits/48b498676dd55f9f28e55dcbbe1e439c8d25ccf4))
+
 ## [1.1.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.0.0%0Dv1.1.0#diff) (2026-08-08)
 
 

@@ -28,6 +28,7 @@ Always pin `?ref=` to a release tag. Do not track `main`.
 | `iam/role`   | IAM role with managed and inline policies                             |
 | `iam/user`   | IAM user, access key, and policies                                    |
 | `lambda`     | Lambda function                                                       |
+| `oidc`       | IAM OIDC identity provider and the trust policy that goes with it     |
 | `rds-aurora` | Aurora cluster, instances, parameter groups, monitoring role          |
 | `route53`    | Route 53 hosted zone and records                                      |
 | `s3`         | S3 bucket with encryption, versioning, lifecycle, CORS, notifications |

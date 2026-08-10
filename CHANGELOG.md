@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.2.0%0Dv1.3.0#diff) (2026-08-10)
+
+
+### Features
+
+* added new oidc module ([b0bcc27](https://github.com/goldenmareventures/terraform/commits/b0bcc2742be842336cef345394c00cf78fd647aa))
+
 ## [1.2.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.1.0%0Dv1.2.0#diff) (2026-08-09)
 
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.3.0%0Dv1.4.0#diff) (2026-08-11)
+
+
+### Code Refactoring
+
+* refactor ecs module to allow managing ecs images outside of TF ([cf3bb0a](https://github.com/goldenmareventures/terraform/commits/cf3bb0aae8fd9548a1f6add4b40f2af77ce4ac01))
+
 ## [1.3.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.2.0%0Dv1.3.0#diff) (2026-08-10)
 
 

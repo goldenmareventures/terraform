@@ -1,12 +1,12 @@
 # modules/ecs/service/outputs.tf
 output "service_name" {
   description = "Name of the ECS service, or null when create_service is false"
-  value       = one(aws_ecs_service.service[*].name)
+  value       = local.service_name
 }
 
 output "service_id" {
   description = "ID of the ECS service, or null when create_service is false"
-  value       = one(aws_ecs_service.service[*].id)
+  value       = local.service_id
 }
 
 output "task_definition_arn" {

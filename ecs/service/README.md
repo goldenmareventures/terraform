@@ -174,6 +174,40 @@ module "report_job" {
 }
 ```
 
+### A service deployed by a pipeline, not by Terraform
+
+Set `ignore_task_definition_changes` when something outside Terraform registers task
+definition revisions and points the service at them — a GitHub Actions workflow, CodeDeploy,
+a release script. Without it, the next `terraform apply` reads the deployed revision as drift
+and reverts the running image to whatever `var.image_tag` holds, which is usually a stale or
+placeholder tag.
+
+```terraform
+module "api" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.3.0"
+
+  name        = "myapp-prod"
+  cluster_arn = module.ecs_cluster.arn
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnet_ids
+
+  # The pipeline owns the running revision from here on. var.image_tag is only
+  # what the service is CREATED against on the first apply.
+  ignore_task_definition_changes = true
+
+  containers = {
+    app = {
+      image         = "${module.ecr.repository_url}:${var.image_tag}"
+      port_mappings = [{ container_port = 8000 }]
+    }
+  }
+
+  tags = local.tags
+}
+```
+
+Leave it at the default `false` whenever Terraform is the only thing that deploys.
+
 ### ECS Exec for a shell in a running task
 
 ```terraform
@@ -215,6 +249,7 @@ aws ecs execute-command --cluster app-prod --task <task-id> \
 | `task_role_policy_arns`              | `list(string)` | `[]`       | Managed policies for the created task role              |
 | `task_role_inline_policies`          | `map(string)`  | `{}`       | Inline policies keyed by name, each a policy JSON       |
 | `create_service`                     | `bool`         | `true`     | Create the service, not only the task definition        |
+| `ignore_task_definition_changes`     | `bool`         | `false`    | Let a deploy pipeline own the running revision           |
 | `desired_count`                      | `number`       | `1`        | Tasks to keep running                                   |
 | `launch_type`                        | `string`       | `"FARGATE"`| Used when `capacity_provider_strategy` is empty         |
 | `capacity_provider_strategy`         | `list(object)` | `[]`       | Split of tasks across capacity providers                |
@@ -320,6 +355,14 @@ The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
 - Terraform does not track the autoscaled task count. With `autoscaling` set, keep
   `desired_count` equal to `autoscaling.min_capacity`, or every apply pulls the service
   back down and autoscaling raises it again.
+- `ignore_task_definition_changes` creates a **different resource address**,
+  `aws_ecs_service.service_pinned` instead of `aws_ecs_service.service`. Flipping it on a
+  live service therefore destroys and recreates it. Move the state instead:
+  `terraform state mv 'module.X.aws_ecs_service.service[0]' 'module.X.aws_ecs_service.service_pinned[0]'`.
+  With the flag on, a container change made through this module registers a new revision that
+  the service does **not** adopt; the pipeline that owns the revision has to roll it out, or
+  do it by hand with
+  `aws ecs update-service --cluster <cluster> --service <name> --task-definition <family> --force-new-deployment`.
 - A target group used in `load_balancers` needs `target_type = "ip"`.
 - Every ARN in `containers.secrets` must also be in `execution_role_secret_arns`, or the
   task fails to start with a `ResourceInitializationError`.

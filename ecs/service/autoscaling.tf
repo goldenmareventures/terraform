@@ -13,8 +13,10 @@ locals {
 resource "aws_appautoscaling_target" "service" {
   count = local.enable_autoscaling ? 1 : 0
 
-  service_namespace  = "ecs"
-  resource_id        = "service/${local.cluster_name}/${aws_ecs_service.service[0].name}"
+  service_namespace = "ecs"
+  # local.service_name, not the resource, because either of the two service
+  # resources may be the one that exists. See the comment in main.tf.
+  resource_id        = "service/${local.cluster_name}/${local.service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
   min_capacity       = var.autoscaling.min_capacity
   max_capacity       = var.autoscaling.max_capacity

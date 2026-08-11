@@ -218,6 +218,12 @@ variable "create_service" {
   default     = true
 }
 
+variable "ignore_task_definition_changes" {
+  description = "Stop Terraform tracking which task definition revision the service runs. Set true when a deploy pipeline registers revisions and updates the service, so that terraform apply does not revert the running image. Leave false when Terraform is the only thing that deploys. Changing this on an existing service REPLACES it, because the resource address changes; move the state instead, between aws_ecs_service.service and aws_ecs_service.service_pinned."
+  type        = bool
+  default     = false
+}
+
 variable "desired_count" {
   description = "Number of tasks to keep running. With autoscaling set, use the same value as autoscaling.min_capacity."
   type        = number

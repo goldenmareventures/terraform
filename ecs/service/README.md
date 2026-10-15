@@ -26,7 +26,7 @@ private subnets.
 
 ```terraform
 module "api" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
 
   name        = "api"
   cluster_arn = module.ecs_cluster.arn
@@ -155,7 +155,7 @@ Use this for a job that EventBridge Scheduler or Step Functions runs with `RunTa
 
 ```terraform
 module "report_job" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
 
   name           = "nightly-report"
   cluster_arn    = module.ecs_cluster.arn

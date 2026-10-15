@@ -16,7 +16,7 @@ Terraform module for creating Amazon ECR repositories with support for image sca
 
 ```terraform
 module "api_repo" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
 
   repository_name = "my-api"
   tags            = local.tags
@@ -27,7 +27,7 @@ module "api_repo" {
 
 ```terraform
 module "api_repo" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
 
   repository_name      = "my-api"
   image_tag_mutability = "IMMUTABLE"
@@ -71,7 +71,7 @@ module "api_repo" {
 
 ```terraform
 module "secure_repo" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
 
   repository_name = "sensitive-app"
   kms_key_arn     = aws_kms_key.ecr.arn
@@ -84,7 +84,7 @@ module "secure_repo" {
 
 ```terraform
 module "shared_repo" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecr?ref=v1.0.0"
 
   repository_name = "shared-base-image"
 

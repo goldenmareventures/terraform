@@ -25,7 +25,7 @@ Use `rds-aurora` for Aurora. Aurora is a cluster with its own options and does n
 
 ```terraform
 module "orders_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
 
   identifier     = "orders-prod"
   engine         = "mysql"
@@ -54,7 +54,7 @@ module "orders_db" {
 
 ```terraform
 module "app_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
 
   identifier     = "app-prod"
   engine         = "postgres"
@@ -82,7 +82,7 @@ module "app_db" {
 
 ```terraform
 module "dev_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
 
   identifier     = "app-dev"
   engine         = "postgres"
@@ -109,7 +109,7 @@ engine version.
 
 ```terraform
 module "orders_db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
+  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//rds?ref=v1.13.0"
 
   identifier     = "orders-prod"
   engine         = "mysql"

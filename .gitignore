@@ -12,3 +12,8 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# Claude artifacts
+.claude/briefs/
+.claude/artifacts/
+.claude/worktrees/

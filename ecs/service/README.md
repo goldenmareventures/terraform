@@ -14,6 +14,7 @@ builds the container definition JSON, so no `jsonencode` is needed in the callin
 - CloudWatch log group wired to every container that sets no log driver of its own
 - Managed security group that opens one ingress rule for each container port
 - Load balancer registration, Cloud Map registration, and a deployment circuit breaker
+- Service Connect, as a server, a client, or both
 - Target tracking autoscaling on CPU, memory, and ALB request count
 - ECS Exec, with the task role permissions added for you
 
@@ -208,6 +209,62 @@ module "api" {
 
 Leave it at the default `false` whenever Terraform is the only thing that deploys.
 
+### A Service Connect server (the portal API)
+
+The port mapping needs a `name`, and `service_connect.services[*].port_name` refers to it.
+Other services in the namespace reach this one at `http://portal-api:8000`.
+
+```terraform
+module "portal_api" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.5.0"
+
+  name        = "portal-api"
+  cluster_arn = module.ecs_cluster.arn
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnet_ids
+
+  containers = {
+    api = {
+      image         = "${module.ecr.repository_url}:${var.image_tag}"
+      port_mappings = [{ container_port = 8000, name = "http", app_protocol = "http" }]
+    }
+  }
+
+  service_connect = {
+    services = [{
+      port_name      = "http"
+      discovery_name = "portal-api"
+      client_alias   = { port = 8000, dns_name = "portal-api" }
+    }]
+  }
+
+  security_group = {
+    ingress_security_group_ids = [module.alb.security_group_id, module.engine.security_group_id]
+  }
+
+  tags = local.tags
+}
+```
+
+The engine's security group is an ingress source because Service Connect traffic goes
+task to task, and the portal admits that port from the engine's group only.
+
+### A Service Connect client (the engine)
+
+A client sets `enabled = true` and no `services`. The engine then reaches the portal API at
+`http://portal-api:8000`. No `services` entry is needed, because no service calls the engine
+over Service Connect.
+
+```terraform
+module "engine" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.5.0"
+
+  # ...
+
+  service_connect = { enabled = true }
+}
+```
+
 ### ECS Exec for a shell in a running task
 
 ```terraform
@@ -259,6 +316,7 @@ aws ecs execute-command --cluster app-prod --task <task-id> \
 | `security_group_ids`                 | `list(string)` | `[]`       | Extra security groups                                   |
 | `load_balancers`                     | `map(object)`  | `{}`       | Target groups the service registers with                |
 | `service_registries`                 | `object`       | `null`     | Cloud Map registration                                  |
+| `service_connect`                    | `object`       | `null`     | Service Connect. Null leaves it off.                    |
 | `deployment_minimum_healthy_percent` | `number`       | `100`      | Percent that stays running during a deployment          |
 | `deployment_maximum_percent`         | `number`       | `200`      | Percent allowed to run during a deployment              |
 | `deployment_circuit_breaker`         | `object`       | `{}`       | Stop and roll back a stuck deployment. Null turns it off. |
@@ -315,6 +373,23 @@ The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
 | `ingress_cidr_blocks`        | `list(string)` | `[]`              | Source CIDRs                                    |
 | `egress_cidr_blocks`         | `list(string)` | `["0.0.0.0/0"]`   | Destinations the tasks may reach                |
 
+### service_connect
+
+| Field       | Type           | Default | Description                                                    |
+| ----------- | -------------- | ------- | -------------------------------------------------------------- |
+| `enabled`   | `bool`         | `true`  | Turn Service Connect on for the service                        |
+| `namespace` | `string`       | `null`  | Cloud Map namespace ARN or name. Defaults to the cluster's one. |
+| `services`  | `list(object)` | `[]`    | Ports this service publishes. Empty for a client only.         |
+
+Each `services` entry:
+
+| Field                   | Type     | Default  | Description                                       |
+| ----------------------- | -------- | -------- | ------------------------------------------------- |
+| `port_name`             | `string` | required | A `port_mappings[*].name` on one of the containers |
+| `discovery_name`        | `string` | `null`   | Cloud Map service name. Defaults to `port_name`.  |
+| `client_alias.port`     | `number` | required | Port clients use, when `client_alias` is set      |
+| `client_alias.dns_name` | `string` | `null`   | DNS name clients use                              |
+
 ### autoscaling
 
 | Field                | Type     | Default | Description                                           |
@@ -367,5 +442,13 @@ The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
 - Every ARN in `containers.secrets` must also be in `execution_role_secret_arns`, or the
   task fails to start with a `ResourceInitializationError`.
 - The module does not create the cluster. Use the `ecs/cluster` module.
+- Every `service_connect.services[*].port_name` must match a `port_mappings[*].name`. The
+  module checks this at plan time.
+- `service_connect.namespace` is optional when the cluster sets `service_connect_namespace`.
+- The Service Connect proxy is an Envoy sidecar that ECS injects. It uses the task's `cpu`
+  and `memory`: about 256 CPU units and 64 MiB below 500 requests per second, and 512 CPU
+  units and 128 MiB above that.
+- To turn Service Connect off on a live service, set `enabled = false` and apply. Then
+  remove the `service_connect` input.
 - Blue/green and external deployment controllers are out of scope. The service always uses
   the rolling ECS controller.

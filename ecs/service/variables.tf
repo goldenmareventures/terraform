@@ -297,6 +297,24 @@ variable "service_registries" {
   default = null
 }
 
+variable "service_connect" {
+  description = "ECS Service Connect. Set to null to leave Service Connect off. A client-only service sets enabled = true and no services. namespace is the ARN or name of the Cloud Map namespace, and defaults to the cluster's service_connect_namespace."
+  type = object({
+    enabled   = optional(bool, true)
+    namespace = optional(string)
+    services = optional(list(object({
+      # Must match a port_mappings[*].name on one of the containers.
+      port_name      = string
+      discovery_name = optional(string)
+      client_alias = optional(object({
+        port     = number
+        dns_name = optional(string)
+      }))
+    })), [])
+  })
+  default = null
+}
+
 variable "deployment_minimum_healthy_percent" {
   description = "Percent of desired_count that must stay running during a deployment"
   type        = number

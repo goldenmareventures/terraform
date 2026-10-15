@@ -93,6 +93,14 @@ locals {
     tags = merge(var.tags, { Name = var.name })
   }
 
+  # AWS rejects an unknown Service Connect port_name only at apply time, so the plan checks it.
+  container_port_names = compact(flatten([
+    for c in var.containers : [for p in c.port_mappings : p.name]
+  ]))
+  service_connect_port_names_valid = alltrue([
+    for s in(var.service_connect == null ? [] : var.service_connect.services) : contains(local.container_port_names, s.port_name)
+  ])
+
   # Whichever of the two exists. Every reference to the service goes through
   # these, so nothing else in the module has to know which one was created.
   service_name = one(concat(
@@ -169,6 +177,33 @@ resource "aws_ecs_service" "service" {
     }
   }
 
+  dynamic "service_connect_configuration" {
+    for_each = var.service_connect != null ? [var.service_connect] : []
+
+    content {
+      enabled   = service_connect_configuration.value.enabled
+      namespace = service_connect_configuration.value.namespace
+
+      dynamic "service" {
+        for_each = service_connect_configuration.value.services
+
+        content {
+          port_name      = service.value.port_name
+          discovery_name = service.value.discovery_name
+
+          dynamic "client_alias" {
+            for_each = service.value.client_alias != null ? [service.value.client_alias] : []
+
+            content {
+              port     = client_alias.value.port
+              dns_name = client_alias.value.dns_name
+            }
+          }
+        }
+      }
+    }
+  }
+
   dynamic "deployment_circuit_breaker" {
     for_each = var.deployment_circuit_breaker != null ? [var.deployment_circuit_breaker] : []
 
@@ -186,6 +221,13 @@ resource "aws_ecs_service" "service" {
     aws_iam_role_policy_attachment.execution_default,
     aws_iam_role_policy.execution_secrets,
   ]
+
+  lifecycle {
+    precondition {
+      condition     = local.service_connect_port_names_valid
+      error_message = "Every service_connect.services[*].port_name must match a port_mappings[*].name on one of the containers."
+    }
+  }
 }
 
 # Identical, except that the running revision belongs to something outside
@@ -250,6 +292,33 @@ resource "aws_ecs_service" "service_pinned" {
     }
   }
 
+  dynamic "service_connect_configuration" {
+    for_each = var.service_connect != null ? [var.service_connect] : []
+
+    content {
+      enabled   = service_connect_configuration.value.enabled
+      namespace = service_connect_configuration.value.namespace
+
+      dynamic "service" {
+        for_each = service_connect_configuration.value.services
+
+        content {
+          port_name      = service.value.port_name
+          discovery_name = service.value.discovery_name
+
+          dynamic "client_alias" {
+            for_each = service.value.client_alias != null ? [service.value.client_alias] : []
+
+            content {
+              port     = client_alias.value.port
+              dns_name = client_alias.value.dns_name
+            }
+          }
+        }
+      }
+    }
+  }
+
   dynamic "deployment_circuit_breaker" {
     for_each = var.deployment_circuit_breaker != null ? [var.deployment_circuit_breaker] : []
 
@@ -271,6 +340,11 @@ resource "aws_ecs_service" "service_pinned" {
     # Without this, the next terraform apply reads that as drift and reverts the
     # running application to whatever image the caller's variables produce.
     ignore_changes = [task_definition]
+
+    precondition {
+      condition     = local.service_connect_port_names_valid
+      error_message = "Every service_connect.services[*].port_name must match a port_mappings[*].name on one of the containers."
+    }
   }
 }
 

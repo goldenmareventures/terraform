@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.4.0%0Dv1.5.0#diff) (2026-10-16)
+
+
+### Features
+
+* GMV-148 #resolve #comment added Service Connect support to the ecs/service module ([4b71e72](https://github.com/goldenmareventures/terraform/commits/4b71e72373ae25668f0ef260a183b00f526ae3c3))
+
+
+### Others
+
+* switch Bitbucket SSH host to ssh.bitbucket.org ([50f74a4](https://github.com/goldenmareventures/terraform/commits/50f74a43b1488a22a769194b0bb7711d7e75d604))
+
+
+### Build System
+
+* ignore claude artifacts ([227279f](https://github.com/goldenmareventures/terraform/commits/227279fff48f293ab01e457b97c27160212b98b7))
+
 ## [1.4.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.3.0%0Dv1.4.0#diff) (2026-08-11)
 
 

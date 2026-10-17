@@ -20,6 +20,7 @@ Always pin `?ref=` to a release tag. Do not track `main`.
 
 | Module            | Purpose                                                               |
 | ----------------- | --------------------------------------------------------------------- |
+| `acm`             | ACM certificate with DNS validation records written to Route 53       |
 | `amplify`         | Amplify app, branches, and domain association                         |
 | `cloudfront`      | CloudFront distribution with origin access control                    |
 | `cloudwatch`      | CloudWatch log group                                                  |

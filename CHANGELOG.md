@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.5.0%0Dv1.6.0#diff) (2026-10-17)
+
+
+### Features
+
+* GMV-147 #resolve #comment added secrets-manager module with generated and external secrets ([9ccc1d4](https://github.com/goldenmareventures/terraform/commits/9ccc1d4f9c6751d7ccdbbcd4a0570fafa49148aa))
+
 ## [1.5.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.4.0%0Dv1.5.0#diff) (2026-10-16)
 
 

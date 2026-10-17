@@ -26,7 +26,7 @@ group. ECS or an autoscaling group registers the targets.
 
 ```terraform
 module "alb" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//alb?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//alb?ref=v1.13.0"
 
   name       = "app-prod"
   vpc_id     = module.vpc.vpc_id
@@ -68,7 +68,7 @@ falls through to the listener default action.
 
 ```terraform
 module "alb" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//alb?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//alb?ref=v1.13.0"
 
   name       = "app-prod"
   vpc_id     = module.vpc.vpc_id
@@ -128,7 +128,7 @@ security group the VPC CIDR instead.
 
 ```terraform
 module "alb" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//alb?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//alb?ref=v1.13.0"
 
   name       = "app-internal"
   vpc_id     = module.vpc.vpc_id
@@ -172,7 +172,7 @@ listeners = {
 
 ```terraform
 module "alb" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//alb?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//alb?ref=v1.13.0"
 
   name       = "app-prod"
   vpc_id     = module.vpc.vpc_id

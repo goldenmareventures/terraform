@@ -18,7 +18,7 @@ A cluster is shared. Create one cluster and point several `ecs/service` modules 
 
 ```terraform
 module "ecs_cluster" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/cluster?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/cluster?ref=v1.13.0"
 
   name = "app-prod"
   tags = local.tags
@@ -32,7 +32,7 @@ keeps one task on Fargate and sends every extra task to Fargate Spot.
 
 ```terraform
 module "ecs_cluster" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/cluster?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/cluster?ref=v1.13.0"
 
   name = "app-staging"
 
@@ -49,7 +49,7 @@ module "ecs_cluster" {
 
 ```terraform
 module "ecs_cluster" {
-  source = "git::ssh://git@ssh.bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/cluster?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/cluster?ref=v1.13.0"
 
   name               = "app-prod"
   container_insights = "enhanced"

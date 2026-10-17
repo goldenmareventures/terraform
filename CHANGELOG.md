@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.6.0%0Dv1.7.0#diff) (2026-10-17)
+
+
+### Features
+
+* GMV-149 #resolve #comment added acm module for DNS-validated certificates ([1bf1d2f](https://github.com/goldenmareventures/terraform/commits/1bf1d2f5494b902f71d0e960822ea82396887914))
+
+
+### Docs
+
+* point module README sources at GitHub ([7d79b63](https://github.com/goldenmareventures/terraform/commits/7d79b6348147208ccacd243b7c1da6a45612cf8a))
+
 ## [1.6.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.5.0%0Dv1.6.0#diff) (2026-10-17)
 
 

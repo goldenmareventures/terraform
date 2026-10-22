@@ -1,0 +1,210 @@
+# Jira smart commits
+#
+# On each push to a branch in the list below, the job reads the message of
+# each new commit. A line with a Jira key and then "#resolve" moves that
+# ticket with the Jira transition whose name starts with "resolve"
+# (in your workflow: "Resolved").
+#
+# Rules, the same as Jira smart commits:
+#   - The key and the command must be on the same line.
+#   - The key must be before the command.
+#   - One command applies to all keys before it on that line.
+#
+name: Jira smart commits
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  smart-commits:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, so a push with many commits is read in full
+
+      - name: Process smart commits
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          # Commands that the job obeys, separated by commas, without "#".
+          # "comment" adds a comment. Each other command is matched to the
+          # start of a Jira transition name. Remove a command to disable it.
+          SMART_COMMANDS: resolve, comment
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re, subprocess, sys
+          import urllib.error, urllib.request
+
+          KEY = re.compile(r"(?<![A-Za-z0-9])([A-Z][A-Z0-9]+-[1-9][0-9]*)(?![A-Za-z0-9])")
+          COMMAND = re.compile(r"(?<!\S)#([A-Za-z][A-Za-z-]*)")
+          ZERO = "0" * 40
+          failed = False
+
+
+          def say(level, text):
+              # GitHub shows these lines as annotations on the run.
+              print(f"::{level}::{text}" if level else text, flush=True)
+
+
+          def fail(text):
+              global failed
+              failed = True
+              say("error", text)
+
+
+          base = os.environ.get("JIRA_BASE_URL", "").strip().rstrip("/")
+          email = os.environ.get("JIRA_EMAIL", "").strip()
+          token = os.environ.get("JIRA_API_TOKEN", "").strip()
+          missing = [n for n, v in [("JIRA_BASE_URL", base), ("JIRA_EMAIL", email), ("JIRA_API_TOKEN", token)] if not v]
+          if missing:
+              say("error", "Repository secret not set: " + ", ".join(missing))
+              sys.exit(1)
+          auth = "Basic " + base64.b64encode(f"{email}:{token}".encode()).decode()
+          commands = [c.strip().lower() for c in os.environ.get("SMART_COMMANDS", "resolve, comment").split(",") if c.strip()]
+
+
+          def jira(method, path, body=None):
+              """Return (HTTP status, JSON body)."""
+              data = json.dumps(body).encode() if body is not None else None
+              request = urllib.request.Request(base + path, data=data, method=method)
+              request.add_header("Authorization", auth)
+              request.add_header("Accept", "application/json")
+              if data is not None:
+                  request.add_header("Content-Type", "application/json")
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      text = response.read().decode()
+                      return response.status, (json.loads(text) if text.strip() else {})
+              except urllib.error.HTTPError as error:
+                  text = error.read().decode("utf-8", "replace")
+                  try:
+                      return error.code, json.loads(text)
+                  except ValueError:
+                      return error.code, {"raw": text[:300]}
+
+
+          def new_commits(event):
+              """Return (sha, message) for each commit in this push, oldest first."""
+              before, after = event.get("before", ""), event.get("after", "")
+              if before and before != ZERO and not event.get("forced"):
+                  result = subprocess.run(
+                      ["git", "log", "--reverse", "--format=%H%x1f%B%x1e", f"{before}..{after}"],
+                      capture_output=True, text=True,
+                  )
+                  if result.returncode == 0:
+                      commits = []
+                      for record in result.stdout.split("\x1e"):
+                          if "\x1f" in record:
+                              sha, message = record.strip("\n").split("\x1f", 1)
+                              commits.append((sha, message))
+                      return commits
+                  say("warning", "git log failed. The commits come from the push event (20 at most).")
+              # A new branch or a forced push has no usable start commit.
+              return [(c.get("id", ""), c.get("message", "")) for c in event.get("commits", [])]
+
+
+          def requests_in(message):
+              """Return (key, command, text) for each command that the job obeys.
+
+              The keys of a line are those before its first "#command". The text of
+              a command goes to the next "#command" or to the end of the line. Only
+              "comment" uses the text.
+              """
+              found = []
+              for line in message.splitlines():
+                  matches = list(COMMAND.finditer(line))
+                  if not matches:
+                      continue
+                  keys = []
+                  for m in KEY.finditer(line[: matches[0].start()]):
+                      if m.group(1) not in keys:
+                          keys.append(m.group(1))
+                  for index, match in enumerate(matches):
+                      command = match.group(1).lower()
+                      if command not in commands:
+                          continue
+                      end = matches[index + 1].start() if index + 1 < len(matches) else len(line)
+                      text = line[match.end():end].strip() if command == "comment" else ""
+                      found += [(key, command, text) for key in keys]
+              return found
+
+
+          def find_transition(transitions, command):
+              """Match a command to the start of a transition name. Spaces count as hyphens."""
+              def norm(name):
+                  return name.strip().lower().replace(" ", "-")
+              exact = [t for t in transitions if norm(t.get("name", "")) == command]
+              if exact:
+                  return exact[0]
+              starts = [t for t in transitions if norm(t.get("name", "")).startswith(command)]
+              return starts[0] if len(starts) == 1 else None
+
+
+          def add_comment(key, text, sha):
+              if not text:
+                  say("warning", f'{key}: "#comment" has no text. No comment added (commit {sha[:8]}).')
+                  return
+              body = {"body": {"type": "doc", "version": 1, "content": [
+                  {"type": "paragraph", "content": [{"type": "text", "text": text}]}]}}
+              status, data = jira("POST", f"/rest/api/3/issue/{key}/comment", body)
+              if status in (200, 201):
+                  say("notice", f"{key}: comment added (commit {sha[:8]}).")
+              elif status == 404:
+                  say("warning", f"{key}: no such ticket, or no permission (commit {sha[:8]}).")
+              else:
+                  fail(f"{key}: comment failed with HTTP {status}: {json.dumps(data)[:200]}")
+
+
+          def apply(key, command, sha):
+              status, data = jira("GET", f"/rest/api/3/issue/{key}/transitions")
+              if status == 404:
+                  say("warning", f"{key}: no such ticket, or no permission (commit {sha[:8]}).")
+                  return
+              if status != 200:
+                  fail(f"{key}: Jira returned HTTP {status} for the transition list: {json.dumps(data)[:200]}")
+                  return
+              transition = find_transition(data.get("transitions", []), command)
+              if transition is None:
+                  _, issue = jira("GET", f"/rest/api/3/issue/{key}?fields=status")
+                  current = ((issue.get("fields") or {}).get("status") or {}).get("name", "unknown")
+                  names = ", ".join(t.get("name", "?") for t in data.get("transitions", [])) or "none"
+                  say("warning", f'{key}: "#{command}" has no transition from the status "{current}" '
+                                 f"(available: {names}). Not changed (commit {sha[:8]}).")
+                  return
+              status, data = jira("POST", f"/rest/api/3/issue/{key}/transitions", {"transition": {"id": transition["id"]}})
+              if status in (200, 204):
+                  target = (transition.get("to") or {}).get("name", "?")
+                  say("notice", f'{key}: "{transition.get("name")}" done, status is now "{target}" (commit {sha[:8]}).')
+              else:
+                  fail(f'{key}: transition "{transition.get("name")}" failed with HTTP {status}: {json.dumps(data)[:200]}')
+
+
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as handle:
+              event = json.load(handle)
+          if event.get("deleted") or event.get("after") == ZERO:
+              say("", "Branch deleted. Nothing to do.")
+              sys.exit(0)
+
+          commits = new_commits(event)
+          done = set()
+          for sha, message in commits:
+              for request in requests_in(message):
+                  if request in done:
+                      continue
+                  done.add(request)
+                  key, command, text = request
+                  if command == "comment":
+                      add_comment(key, text, sha)
+                  else:
+                      apply(key, command, sha)
+
+          say("", f"{len(commits)} commit(s) read, {len(done)} smart commit command(s) processed.")
+          sys.exit(1 if failed else 0)
+          PY

@@ -18,22 +18,24 @@ Always pin `?ref=` to a release tag. Do not track `main`.
 
 ## Modules
 
-| Module       | Purpose                                                               |
-| ------------ | --------------------------------------------------------------------- |
-| `amplify`    | Amplify app, branches, and domain association                         |
-| `cloudfront` | CloudFront distribution with origin access control                    |
-| `cloudwatch` | CloudWatch log group                                                  |
-| `dynamodb`   | DynamoDB table                                                        |
-| `iam/policy` | Managed IAM policy                                                    |
-| `iam/role`   | IAM role with managed and inline policies                             |
-| `iam/user`   | IAM user, access key, and policies                                    |
-| `lambda`     | Lambda function                                                       |
-| `oidc`       | IAM OIDC identity provider and the trust policy that goes with it     |
-| `rds-aurora` | Aurora cluster, instances, parameter groups, monitoring role          |
-| `route53`    | Route 53 hosted zone and records                                      |
-| `s3`         | S3 bucket with encryption, versioning, lifecycle, CORS, notifications |
-| `ses`        | SES templates, configuration sets, and event destinations             |
-| `ssm`        | SSM parameters                                                        |
+| Module            | Purpose                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| `acm`             | ACM certificate with DNS validation records written to Route 53       |
+| `amplify`         | Amplify app, branches, and domain association                         |
+| `cloudfront`      | CloudFront distribution with origin access control                    |
+| `cloudwatch`      | CloudWatch log group                                                  |
+| `dynamodb`        | DynamoDB table                                                        |
+| `iam/policy`      | Managed IAM policy                                                    |
+| `iam/role`        | IAM role with managed and inline policies                             |
+| `iam/user`        | IAM user, access key, and policies                                    |
+| `lambda`          | Lambda function                                                       |
+| `oidc`            | IAM OIDC identity provider and the trust policy that goes with it     |
+| `rds-aurora`      | Aurora cluster, instances, parameter groups, monitoring role          |
+| `route53`         | Route 53 hosted zone and records                                      |
+| `s3`              | S3 bucket with encryption, versioning, lifecycle, CORS, notifications |
+| `secrets-manager` | Secrets Manager secrets with generated or externally set values       |
+| `ses`             | SES templates, configuration sets, and event destinations             |
+| `ssm`             | SSM parameters                                                        |
 
 Each module directory holds `main.tf`, `variables.tf`, and `outputs.tf`.
 Modules with a `README.md` include input tables and examples.

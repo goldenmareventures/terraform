@@ -25,7 +25,7 @@ Valkey and Redis create an `aws_elasticache_replication_group`. Memcached create
 
 ```terraform
 module "cache" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//elasticache?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//elasticache?ref=v1.13.0"
 
   name           = "app-dev"
   engine         = "valkey"
@@ -43,7 +43,7 @@ module "cache" {
 
 ```terraform
 module "cache" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//elasticache?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//elasticache?ref=v1.13.0"
 
   name           = "app-prod"
   engine         = "valkey"
@@ -69,7 +69,7 @@ module "cache" {
 
 ```terraform
 module "sessions" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//elasticache?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//elasticache?ref=v1.13.0"
 
   name           = "sessions-prod"
   engine         = "redis"
@@ -94,7 +94,7 @@ module "sessions" {
 
 ```terraform
 module "page_cache" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//elasticache?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//elasticache?ref=v1.13.0"
 
   name           = "pages-prod"
   engine         = "memcached"
@@ -117,7 +117,7 @@ engine version.
 
 ```terraform
 module "cache" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//elasticache?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//elasticache?ref=v1.13.0"
 
   name           = "app-prod"
   engine         = "valkey"

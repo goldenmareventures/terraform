@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.6.0%0Dv1.7.0#diff) (2026-10-17)
+
+
+### Features
+
+* GMV-149 #resolve #comment added acm module for DNS-validated certificates ([1bf1d2f](https://github.com/goldenmareventures/terraform/commits/1bf1d2f5494b902f71d0e960822ea82396887914))
+
+
+### Docs
+
+* point module README sources at GitHub ([7d79b63](https://github.com/goldenmareventures/terraform/commits/7d79b6348147208ccacd243b7c1da6a45612cf8a))
+
+## [1.6.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.5.0%0Dv1.6.0#diff) (2026-10-17)
+
+
+### Features
+
+* GMV-147 #resolve #comment added secrets-manager module with generated and external secrets ([9ccc1d4](https://github.com/goldenmareventures/terraform/commits/9ccc1d4f9c6751d7ccdbbcd4a0570fafa49148aa))
+
+## [1.5.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.4.0%0Dv1.5.0#diff) (2026-10-16)
+
+
+### Features
+
+* GMV-148 #resolve #comment added Service Connect support to the ecs/service module ([4b71e72](https://github.com/goldenmareventures/terraform/commits/4b71e72373ae25668f0ef260a183b00f526ae3c3))
+
+
+### Others
+
+* switch Bitbucket SSH host to ssh.bitbucket.org ([50f74a4](https://github.com/goldenmareventures/terraform/commits/50f74a43b1488a22a769194b0bb7711d7e75d604))
+
+
+### Build System
+
+* ignore claude artifacts ([227279f](https://github.com/goldenmareventures/terraform/commits/227279fff48f293ab01e457b97c27160212b98b7))
+
 ## [1.4.0](https://github.com/goldenmareventures/terraform/branches/compare/v1.3.0%0Dv1.4.0#diff) (2026-08-11)
 
 

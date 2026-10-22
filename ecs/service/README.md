@@ -14,6 +14,7 @@ builds the container definition JSON, so no `jsonencode` is needed in the callin
 - CloudWatch log group wired to every container that sets no log driver of its own
 - Managed security group that opens one ingress rule for each container port
 - Load balancer registration, Cloud Map registration, and a deployment circuit breaker
+- Service Connect, as a server, a client, or both
 - Target tracking autoscaling on CPU, memory, and ALB request count
 - ECS Exec, with the task role permissions added for you
 
@@ -26,7 +27,7 @@ private subnets.
 
 ```terraform
 module "api" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.13.0"
 
   name        = "api"
   cluster_arn = module.ecs_cluster.arn
@@ -155,7 +156,7 @@ Use this for a job that EventBridge Scheduler or Step Functions runs with `RunTa
 
 ```terraform
 module "report_job" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//ecs/service?ref=v1.13.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.13.0"
 
   name           = "nightly-report"
   cluster_arn    = module.ecs_cluster.arn
@@ -208,6 +209,62 @@ module "api" {
 
 Leave it at the default `false` whenever Terraform is the only thing that deploys.
 
+### A Service Connect server (the portal API)
+
+The port mapping needs a `name`, and `service_connect.services[*].port_name` refers to it.
+Other services in the namespace reach this one at `http://portal-api:8000`.
+
+```terraform
+module "portal_api" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.5.0"
+
+  name        = "portal-api"
+  cluster_arn = module.ecs_cluster.arn
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnet_ids
+
+  containers = {
+    api = {
+      image         = "${module.ecr.repository_url}:${var.image_tag}"
+      port_mappings = [{ container_port = 8000, name = "http", app_protocol = "http" }]
+    }
+  }
+
+  service_connect = {
+    services = [{
+      port_name      = "http"
+      discovery_name = "portal-api"
+      client_alias   = { port = 8000, dns_name = "portal-api" }
+    }]
+  }
+
+  security_group = {
+    ingress_security_group_ids = [module.alb.security_group_id, module.engine.security_group_id]
+  }
+
+  tags = local.tags
+}
+```
+
+The engine's security group is an ingress source because Service Connect traffic goes
+task to task, and the portal admits that port from the engine's group only.
+
+### A Service Connect client (the engine)
+
+A client sets `enabled = true` and no `services`. The engine then reaches the portal API at
+`http://portal-api:8000`. No `services` entry is needed, because no service calls the engine
+over Service Connect.
+
+```terraform
+module "engine" {
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//ecs/service?ref=v1.5.0"
+
+  # ...
+
+  service_connect = { enabled = true }
+}
+```
+
 ### ECS Exec for a shell in a running task
 
 ```terraform
@@ -224,83 +281,84 @@ aws ecs execute-command --cluster app-prod --task <task-id> \
 
 ## Inputs
 
-| Name                                 | Type           | Default    | Description                                             |
-| ------------------------------------ | -------------- | ---------- | ------------------------------------------------------- |
-| `name`                               | `string`       | required   | Service name, and the prefix for every other resource   |
-| `cluster_arn`                        | `string`       | required   | Cluster that runs the service                           |
-| `vpc_id`                             | `string`       | required   | VPC of the managed security group                       |
-| `subnet_ids`                         | `list(string)` | required   | Subnets the tasks run in                                |
-| `containers`                         | `map(object)`  | required   | Containers keyed by container name                      |
-| `family`                             | `string`       | `null`     | Task family. Defaults to `name`.                        |
-| `cpu`                                | `string`       | `"256"`    | CPU units for the whole task                            |
-| `memory`                             | `string`       | `"512"`    | Memory in MiB for the whole task                        |
-| `cpu_architecture`                   | `string`       | `"X86_64"` | `X86_64` or `ARM64`                                     |
-| `operating_system_family`            | `string`       | `"LINUX"`  | Operating system family                                 |
-| `ephemeral_storage_size`             | `number`       | `null`     | Scratch space in GiB, 21 to 200                         |
-| `volumes`                            | `map(object)`  | `{}`       | Task volumes keyed by volume name                       |
-| `create_log_group`                   | `bool`         | `true`     | Create the CloudWatch log group                         |
-| `log_group_name`                     | `string`       | `null`     | Defaults to `/ecs/<name>`                               |
-| `log_retention_in_days`              | `number`       | `30`       | Days CloudWatch keeps the logs                          |
-| `log_group_kms_key_id`               | `string`       | `null`     | Key that encrypts the log group                         |
-| `execution_role_arn`                 | `string`       | `null`     | Existing execution role. Null creates one.              |
-| `execution_role_policy_arns`         | `list(string)` | `[]`       | Extra managed policies for the created execution role   |
-| `execution_role_secret_arns`         | `list(string)` | `[]`       | Secret, parameter, and key ARNs the execution role reads |
-| `task_role_arn`                      | `string`       | `null`     | Existing task role. Null creates one.                   |
-| `task_role_policy_arns`              | `list(string)` | `[]`       | Managed policies for the created task role              |
-| `task_role_inline_policies`          | `map(string)`  | `{}`       | Inline policies keyed by name, each a policy JSON       |
-| `create_service`                     | `bool`         | `true`     | Create the service, not only the task definition        |
-| `ignore_task_definition_changes`     | `bool`         | `false`    | Let a deploy pipeline own the running revision           |
-| `desired_count`                      | `number`       | `1`        | Tasks to keep running                                   |
-| `launch_type`                        | `string`       | `"FARGATE"`| Used when `capacity_provider_strategy` is empty         |
-| `capacity_provider_strategy`         | `list(object)` | `[]`       | Split of tasks across capacity providers                |
-| `platform_version`                   | `string`       | `null`     | Fargate platform version                                |
-| `assign_public_ip`                   | `bool`         | `false`    | Give each task a public IP                              |
-| `security_group`                     | `object`       | `{}`       | Managed security group. Null skips it.                  |
-| `security_group_ids`                 | `list(string)` | `[]`       | Extra security groups                                   |
-| `load_balancers`                     | `map(object)`  | `{}`       | Target groups the service registers with                |
-| `service_registries`                 | `object`       | `null`     | Cloud Map registration                                  |
-| `deployment_minimum_healthy_percent` | `number`       | `100`      | Percent that stays running during a deployment          |
-| `deployment_maximum_percent`         | `number`       | `200`      | Percent allowed to run during a deployment              |
-| `deployment_circuit_breaker`         | `object`       | `{}`       | Stop and roll back a stuck deployment. Null turns it off. |
-| `health_check_grace_period_seconds`  | `number`       | `null`     | Grace period, load balancer services only               |
-| `enable_execute_command`             | `bool`         | `false`    | Allow `aws ecs execute-command`                         |
-| `enable_ecs_managed_tags`            | `bool`         | `true`     | Let ECS add its own tags to each task                   |
-| `propagate_tags`                     | `string`       | `"SERVICE"`| `NONE`, `SERVICE`, or `TASK_DEFINITION`                 |
-| `availability_zone_rebalancing`      | `string`       | `null`     | `ENABLED` or `DISABLED`                                 |
-| `wait_for_steady_state`              | `bool`         | `false`    | Make the apply wait for the deployment                  |
-| `force_new_deployment`               | `bool`         | `false`    | Redeploy on every apply                                 |
-| `autoscaling`                        | `object`       | `null`     | Target tracking autoscaling                             |
-| `tags`                               | `map(string)`  | `{}`       | Tags applied to every created resource                  |
+| Name                                 | Type           | Default     | Description                                               |
+| ------------------------------------ | -------------- | ----------- | --------------------------------------------------------- |
+| `name`                               | `string`       | required    | Service name, and the prefix for every other resource     |
+| `cluster_arn`                        | `string`       | required    | Cluster that runs the service                             |
+| `vpc_id`                             | `string`       | required    | VPC of the managed security group                         |
+| `subnet_ids`                         | `list(string)` | required    | Subnets the tasks run in                                  |
+| `containers`                         | `map(object)`  | required    | Containers keyed by container name                        |
+| `family`                             | `string`       | `null`      | Task family. Defaults to `name`.                          |
+| `cpu`                                | `string`       | `"256"`     | CPU units for the whole task                              |
+| `memory`                             | `string`       | `"512"`     | Memory in MiB for the whole task                          |
+| `cpu_architecture`                   | `string`       | `"X86_64"`  | `X86_64` or `ARM64`                                       |
+| `operating_system_family`            | `string`       | `"LINUX"`   | Operating system family                                   |
+| `ephemeral_storage_size`             | `number`       | `null`      | Scratch space in GiB, 21 to 200                           |
+| `volumes`                            | `map(object)`  | `{}`        | Task volumes keyed by volume name                         |
+| `create_log_group`                   | `bool`         | `true`      | Create the CloudWatch log group                           |
+| `log_group_name`                     | `string`       | `null`      | Defaults to `/ecs/<name>`                                 |
+| `log_retention_in_days`              | `number`       | `30`        | Days CloudWatch keeps the logs                            |
+| `log_group_kms_key_id`               | `string`       | `null`      | Key that encrypts the log group                           |
+| `execution_role_arn`                 | `string`       | `null`      | Existing execution role. Null creates one.                |
+| `execution_role_policy_arns`         | `list(string)` | `[]`        | Extra managed policies for the created execution role     |
+| `execution_role_secret_arns`         | `list(string)` | `[]`        | Secret, parameter, and key ARNs the execution role reads  |
+| `task_role_arn`                      | `string`       | `null`      | Existing task role. Null creates one.                     |
+| `task_role_policy_arns`              | `list(string)` | `[]`        | Managed policies for the created task role                |
+| `task_role_inline_policies`          | `map(string)`  | `{}`        | Inline policies keyed by name, each a policy JSON         |
+| `create_service`                     | `bool`         | `true`      | Create the service, not only the task definition          |
+| `ignore_task_definition_changes`     | `bool`         | `false`     | Let a deploy pipeline own the running revision            |
+| `desired_count`                      | `number`       | `1`         | Tasks to keep running                                     |
+| `launch_type`                        | `string`       | `"FARGATE"` | Used when `capacity_provider_strategy` is empty           |
+| `capacity_provider_strategy`         | `list(object)` | `[]`        | Split of tasks across capacity providers                  |
+| `platform_version`                   | `string`       | `null`      | Fargate platform version                                  |
+| `assign_public_ip`                   | `bool`         | `false`     | Give each task a public IP                                |
+| `security_group`                     | `object`       | `{}`        | Managed security group. Null skips it.                    |
+| `security_group_ids`                 | `list(string)` | `[]`        | Extra security groups                                     |
+| `load_balancers`                     | `map(object)`  | `{}`        | Target groups the service registers with                  |
+| `service_registries`                 | `object`       | `null`      | Cloud Map registration                                    |
+| `service_connect`                    | `object`       | `null`      | Service Connect. Null leaves it off.                      |
+| `deployment_minimum_healthy_percent` | `number`       | `100`       | Percent that stays running during a deployment            |
+| `deployment_maximum_percent`         | `number`       | `200`       | Percent allowed to run during a deployment                |
+| `deployment_circuit_breaker`         | `object`       | `{}`        | Stop and roll back a stuck deployment. Null turns it off. |
+| `health_check_grace_period_seconds`  | `number`       | `null`      | Grace period, load balancer services only                 |
+| `enable_execute_command`             | `bool`         | `false`     | Allow `aws ecs execute-command`                           |
+| `enable_ecs_managed_tags`            | `bool`         | `true`      | Let ECS add its own tags to each task                     |
+| `propagate_tags`                     | `string`       | `"SERVICE"` | `NONE`, `SERVICE`, or `TASK_DEFINITION`                   |
+| `availability_zone_rebalancing`      | `string`       | `null`      | `ENABLED` or `DISABLED`                                   |
+| `wait_for_steady_state`              | `bool`         | `false`     | Make the apply wait for the deployment                    |
+| `force_new_deployment`               | `bool`         | `false`     | Redeploy on every apply                                   |
+| `autoscaling`                        | `object`       | `null`      | Target tracking autoscaling                               |
+| `tags`                               | `map(string)`  | `{}`        | Tags applied to every created resource                    |
 
 ### containers
 
-| Field                      | Type           | Default | Description                                            |
-| -------------------------- | -------------- | ------- | ------------------------------------------------------ |
-| `image`                    | `string`       | required| Image URI                                              |
-| `cpu`                      | `number`       | `null`  | CPU units for this container                           |
-| `memory`                   | `number`       | `null`  | Hard memory limit in MiB                               |
-| `memory_reservation`       | `number`       | `null`  | Soft memory limit in MiB                               |
-| `essential`                | `bool`         | `true`  | Stop the task when this container stops                |
-| `command`                  | `list(string)` | `null`  | Overrides the image CMD                                |
-| `entrypoint`               | `list(string)` | `null`  | Overrides the image ENTRYPOINT                         |
-| `working_directory`        | `string`       | `null`  | Working directory inside the container                 |
-| `user`                     | `string`       | `null`  | User the process runs as                               |
-| `stop_timeout`             | `number`       | `null`  | Seconds before the container is killed                 |
-| `readonly_root_filesystem` | `bool`         | `null`  | Mount the root filesystem read only                    |
-| `environment`              | `map(string)`  | `{}`    | Plain values                                           |
-| `secrets`                  | `map(string)`  | `{}`    | Variable name to Secrets Manager or SSM ARN            |
-| `port_mappings`            | `list(object)` | `[]`    | `container_port`, `protocol`, `name`, `app_protocol`   |
-| `health_check`             | `object`       | `null`  | `command`, `interval`, `timeout`, `retries`, `start_period` |
-| `mount_points`             | `list(object)` | `[]`    | `source_volume`, `container_path`, `read_only`         |
-| `container_depends_on`     | `list(object)` | `[]`    | `container_name`, `condition`                          |
-| `log_configuration`        | `object`       | `null`  | `log_driver` and `options`, replacing the managed one  |
+| Field                      | Type           | Default  | Description                                                 |
+| -------------------------- | -------------- | -------- | ----------------------------------------------------------- |
+| `image`                    | `string`       | required | Image URI                                                   |
+| `cpu`                      | `number`       | `null`   | CPU units for this container                                |
+| `memory`                   | `number`       | `null`   | Hard memory limit in MiB                                    |
+| `memory_reservation`       | `number`       | `null`   | Soft memory limit in MiB                                    |
+| `essential`                | `bool`         | `true`   | Stop the task when this container stops                     |
+| `command`                  | `list(string)` | `null`   | Overrides the image CMD                                     |
+| `entrypoint`               | `list(string)` | `null`   | Overrides the image ENTRYPOINT                              |
+| `working_directory`        | `string`       | `null`   | Working directory inside the container                      |
+| `user`                     | `string`       | `null`   | User the process runs as                                    |
+| `stop_timeout`             | `number`       | `null`   | Seconds before the container is killed                      |
+| `readonly_root_filesystem` | `bool`         | `null`   | Mount the root filesystem read only                         |
+| `environment`              | `map(string)`  | `{}`     | Plain values                                                |
+| `secrets`                  | `map(string)`  | `{}`     | Variable name to Secrets Manager or SSM ARN                 |
+| `port_mappings`            | `list(object)` | `[]`     | `container_port`, `protocol`, `name`, `app_protocol`        |
+| `health_check`             | `object`       | `null`   | `command`, `interval`, `timeout`, `retries`, `start_period` |
+| `mount_points`             | `list(object)` | `[]`     | `source_volume`, `container_path`, `read_only`              |
+| `container_depends_on`     | `list(object)` | `[]`     | `container_name`, `condition`                               |
+| `log_configuration`        | `object`       | `null`   | `log_driver` and `options`, replacing the managed one       |
 
 `condition` is `START`, `COMPLETE`, `SUCCESS`, or `HEALTHY`.
 
 ### volumes
 
-| Field | Type     | Default | Description                                      |
-| ----- | -------- | ------- | ------------------------------------------------ |
+| Field | Type     | Default | Description                                         |
+| ----- | -------- | ------- | --------------------------------------------------- |
 | `efs` | `object` | `null`  | EFS settings. Null gives task scoped scratch space. |
 
 The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
@@ -308,44 +366,61 @@ The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
 
 ### security_group
 
-| Field                        | Type           | Default           | Description                                     |
-| ---------------------------- | -------------- | ----------------- | ----------------------------------------------- |
-| `ingress_ports`              | `list(number)` | every container port | Ports the rules open                         |
-| `ingress_security_group_ids` | `list(string)` | `[]`              | Source security groups, usually the ALB group   |
-| `ingress_cidr_blocks`        | `list(string)` | `[]`              | Source CIDRs                                    |
-| `egress_cidr_blocks`         | `list(string)` | `["0.0.0.0/0"]`   | Destinations the tasks may reach                |
+| Field                        | Type           | Default              | Description                                   |
+| ---------------------------- | -------------- | -------------------- | --------------------------------------------- |
+| `ingress_ports`              | `list(number)` | every container port | Ports the rules open                          |
+| `ingress_security_group_ids` | `list(string)` | `[]`                 | Source security groups, usually the ALB group |
+| `ingress_cidr_blocks`        | `list(string)` | `[]`                 | Source CIDRs                                  |
+| `egress_cidr_blocks`         | `list(string)` | `["0.0.0.0/0"]`      | Destinations the tasks may reach              |
+
+### service_connect
+
+| Field       | Type           | Default | Description                                                     |
+| ----------- | -------------- | ------- | --------------------------------------------------------------- |
+| `enabled`   | `bool`         | `true`  | Turn Service Connect on for the service                         |
+| `namespace` | `string`       | `null`  | Cloud Map namespace ARN or name. Defaults to the cluster's one. |
+| `services`  | `list(object)` | `[]`    | Ports this service publishes. Empty for a client only.          |
+
+Each `services` entry:
+
+| Field                   | Type     | Default  | Description                                        |
+| ----------------------- | -------- | -------- | -------------------------------------------------- |
+| `port_name`             | `string` | required | A `port_mappings[*].name` on one of the containers |
+| `discovery_name`        | `string` | `null`   | Cloud Map service name. Defaults to `port_name`.   |
+| `client_alias.port`     | `number` | required | Port clients use, when `client_alias` is set       |
+| `client_alias.dns_name` | `string` | `null`   | DNS name clients use                               |
 
 ### autoscaling
 
-| Field                | Type     | Default | Description                                           |
-| -------------------- | -------- | ------- | ----------------------------------------------------- |
-| `min_capacity`       | `number` | required| Lowest task count                                     |
-| `max_capacity`       | `number` | required| Highest task count                                    |
-| `cpu_target`         | `number` | `70`    | Target average CPU percent. Null skips the policy.    |
-| `memory_target`      | `number` | `null`  | Target average memory percent                         |
-| `request_count`      | `object` | `null`  | `target` and `resource_label`                         |
-| `scale_in_cooldown`  | `number` | `300`   | Seconds before another scale in                       |
-| `scale_out_cooldown` | `number` | `60`    | Seconds before another scale out                      |
+| Field                | Type     | Default  | Description                                        |
+| -------------------- | -------- | -------- | -------------------------------------------------- |
+| `min_capacity`       | `number` | required | Lowest task count                                  |
+| `max_capacity`       | `number` | required | Highest task count                                 |
+| `cpu_target`         | `number` | `70`     | Target average CPU percent. Null skips the policy. |
+| `memory_target`      | `number` | `null`   | Target average memory percent                      |
+| `request_count`      | `object` | `null`   | `target` and `resource_label`                      |
+| `scale_in_cooldown`  | `number` | `300`    | Seconds before another scale in                    |
+| `scale_out_cooldown` | `number` | `60`     | Seconds before another scale out                   |
 
 `resource_label` is `"<alb_arn_suffix>/<target_group_arn_suffix>"`.
 
 ## Outputs
 
-| Name                             | Description                                       |
-| -------------------------------- | ------------------------------------------------- |
-| `service_name`                   | Name of the service, or null                      |
-| `service_id`                     | ID of the service, or null                        |
-| `task_definition_arn`            | ARN of the task definition revision               |
-| `task_definition_family`         | Family of the task definition                     |
-| `task_definition_revision`       | Revision number                                   |
-| `security_group_id`              | ID of the managed security group, or null         |
-| `security_group_ids`             | Every security group attached to the tasks        |
-| `execution_role_arn`             | Execution role in use, created or supplied        |
-| `execution_role_name`            | Name of the created execution role, or null       |
-| `task_role_arn`                  | Task role in use, created or supplied             |
-| `task_role_name`                 | Name of the created task role, or null            |
-| `log_group_name`                 | Name of the created log group, or null            |
-| `autoscaling_target_resource_id` | Resource ID for extra scaling policies            |
+| Name                             | Description                                 |
+| -------------------------------- | ------------------------------------------- |
+| `service_name`                   | Name of the service, or null                |
+| `service_id`                     | ID of the service, or null                  |
+| `task_definition_arn`            | ARN of the task definition revision         |
+| `task_definition_family`         | Family of the task definition               |
+| `task_definition_revision`       | Revision number                             |
+| `security_group_id`              | ID of the managed security group, or null   |
+| `security_group_ids`             | Every security group attached to the tasks  |
+| `execution_role_arn`             | Execution role in use, created or supplied  |
+| `execution_role_name`            | Name of the created execution role, or null |
+| `task_role_arn`                  | Task role in use, created or supplied       |
+| `task_role_name`                 | Name of the created task role, or null      |
+| `log_group_name`                 | Name of the created log group, or null      |
+| `autoscaling_target_resource_id` | Resource ID for extra scaling policies      |
 
 ## Notes
 
@@ -367,5 +442,13 @@ The `efs` object holds `file_system_id`, `root_directory`, `transit_encryption`,
 - Every ARN in `containers.secrets` must also be in `execution_role_secret_arns`, or the
   task fails to start with a `ResourceInitializationError`.
 - The module does not create the cluster. Use the `ecs/cluster` module.
+- Every `service_connect.services[*].port_name` must match a `port_mappings[*].name`. The
+  module checks this at plan time.
+- `service_connect.namespace` is optional when the cluster sets `service_connect_namespace`.
+- The Service Connect proxy is an Envoy sidecar that ECS injects. It uses the task's `cpu`
+  and `memory`: about 256 CPU units and 64 MiB below 500 requests per second, and 512 CPU
+  units and 128 MiB above that.
+- To turn Service Connect off on a live service, set `enabled = false` and apply. Then
+  remove the `service_connect` input.
 - Blue/green and external deployment controllers are out of scope. The service always uses
   the rolling ECS controller.

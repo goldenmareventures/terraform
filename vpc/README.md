@@ -26,7 +26,7 @@ subnets outbound internet access.
 
 ```terraform
 module "vpc" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//vpc?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//vpc?ref=v1.1.0"
 
   name       = "app-prod"
   cidr_block = "10.0.0.0/16"
@@ -55,7 +55,7 @@ reaches S3 and DynamoDB through the gateway endpoints.
 
 ```terraform
 module "vpc" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//vpc?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//vpc?ref=v1.1.0"
 
   name       = "app-prod"
   cidr_block = "10.0.0.0/16"
@@ -87,7 +87,7 @@ access. No NAT gateway and no elastic IP are created.
 
 ```terraform
 module "vpc" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//vpc?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//vpc?ref=v1.1.0"
 
   name       = "sandbox"
   cidr_block = "10.20.0.0/16"
@@ -125,7 +125,7 @@ To an existing S3 bucket. No role is created; S3 delivery uses a service princip
 
 ```terraform
 module "db" {
-  source = "git::ssh://git@bitbucket.org/desertwebdesigns/terraform-modules.git//rds-aurora?ref=v1.1.0"
+  source = "git::ssh://git@github.com/goldenmareventures/terraform.git//rds-aurora?ref=v1.1.0"
 
   cluster_identifier = "app-prod"
   subnet_ids         = [module.vpc.private_subnet_ids_by_key["db-a"], module.vpc.private_subnet_ids_by_key["db-b"]]
